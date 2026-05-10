@@ -1,105 +1,99 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../../styles/Register.css";
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState("");
-
-  const validate = () => {
-    let err = {};
-
-    if (!form.name.trim()) err.name = "Name is required";
-    if (!form.email.includes("@")) err.email = "Invalid email";
-
-    if (form.password.length < 6)
-      err.password = "Min 6 characters required";
-    else if (!/[A-Z]/.test(form.password))
-      err.password = "Add 1 uppercase letter";
-    else if (!/[0-9]/.test(form.password))
-      err.password = "Add 1 number";
-
-    if (form.password !== form.confirmPassword)
-      err.confirmPassword = "Passwords do not match";
-
-    return err;
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validate();
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      setSuccess("");
-    } else {
-      setErrors({});
-      setSuccess("🎉 Registration Successful!");
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-    }
+    // SAVE USER
+    localStorage.setItem(
+      "user",
+      JSON.stringify(form)
+    );
+
+    setSuccess("✅ Registration Successful!");
+
+    setTimeout(() => {
+      navigate("/log");
+    }, 1500);
   };
 
   return (
     <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSubmit}>
+
+      <form
+        className="auth-form"
+        onSubmit={handleSubmit}
+      >
         <h2>Create Account</h2>
 
-        {success && <div className="success">{success}</div>}
+        {success && (
+          <div className="success">
+            {success}
+          </div>
+        )}
 
         <input
           type="text"
           placeholder="Name"
           value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              name: e.target.value,
+            })
+          }
+          required
         />
-        {errors.name && <p className="error">{errors.name}</p>}
 
         <input
           type="email"
           placeholder="Email"
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              email: e.target.value,
+            })
+          }
+          required
         />
-        {errors.email && <p className="error">{errors.email}</p>}
 
         <input
           type="password"
           placeholder="Password"
           value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
-        {errors.password && <p className="error">{errors.password}</p>}
-
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={form.confirmPassword}
           onChange={(e) =>
-            setForm({ ...form, confirmPassword: e.target.value })
+            setForm({
+              ...form,
+              password: e.target.value,
+            })
           }
+          required
         />
-        {errors.confirmPassword && (
-          <p className="error">{errors.confirmPassword}</p>
-        )}
 
-        <button className="btn primary">Register</button>
+        <button className="btn primary">
+          Register
+        </button>
 
         <p className="switch-link">
-          Already have an account? <Link to="/log">Login</Link>
+          Already have an account?
+          <Link to="/log"> Login</Link>
         </p>
+
       </form>
+
     </div>
   );
 };

@@ -1,0 +1,221 @@
+/* PAGE */
+.analytics-page{
+  padding:40px;
+  background:#f4f7fc;
+  min-height:100vh;
+}
+
+/* HEADER */
+.analytics-header{
+  margin-bottom:30px;
+}
+
+.analytics-header h1{
+  font-size:36px;
+  color:#1e293b;
+  margin-top:15px;
+}
+
+.analytics-header p{
+  color:#64748b;
+  margin-top:10px;
+}
+
+/* BACK LINK */
+.back-link{
+  text-decoration:none;
+  color:#2563eb;
+  font-weight:600;
+}
+
+/* STATS */
+.analytics-stats{
+  display:grid;
+  grid-template-columns:
+  repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+  margin-bottom:40px;
+}
+
+/* CARD */
+.analytics-card{
+  padding:25px;
+  border-radius:18px;
+  color:white;
+  box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  transition:0.3s;
+}
+
+.analytics-card:hover{
+  transform:translateY(-5px);
+}
+
+.analytics-card h2{
+  font-size:32px;
+  margin-bottom:10px;
+}
+
+.analytics-card p{
+  font-size:16px;
+}
+
+/* DIFFERENT COLORS */
+.total{
+  background:linear-gradient(
+    135deg,
+    #2563eb,
+    #1e40af
+  );
+}
+
+.applied{
+  background:linear-gradient(
+    135deg,
+    #0ea5e9,
+    #0369a1
+  );
+}
+
+.interview{
+  background:linear-gradient(
+    135deg,
+    #f59e0b,
+    #d97706
+  );
+}
+
+.offer{
+  background:linear-gradient(
+    135deg,
+    #10b981,
+    #047857
+  );
+}
+
+.rejected{
+  background:linear-gradient(
+    135deg,
+    #ef4444,
+    #b91c1c
+  );
+}
+
+/* PROGRESS */
+.progress-section{
+  display:grid;
+  grid-template-columns:
+  repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
+  margin-bottom:40px;
+}
+
+.progress-card{
+  background:white;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.progress-card h3{
+  margin-bottom:20px;
+  color:#1e293b;
+}
+
+.progress-bar{
+  width:100%;
+  height:15px;
+  background:#e2e8f0;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  border-radius:20px;
+}
+
+.interview-fill{
+  background:#f59e0b;
+}
+
+.offer-fill{
+  background:#10b981;
+}
+
+/* STATUS TABLE */
+.status-section{
+  background:white;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom:40px;
+}
+
+.status-section h2{
+  margin-bottom:20px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+table th,
+table td{
+  padding:15px;
+  text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+
+table th{
+  background:#f8fafc;
+}
+
+/* STATUS BADGES */
+.status-badge{
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:14px;
+  font-weight:600;
+  color:white;
+}
+
+.status-badge.applied{
+  background:#0ea5e9;
+}
+
+.status-badge.interview{
+  background:#f59e0b;
+}
+
+.status-badge.offer{
+  background:#10b981;
+}
+
+.status-badge.rejected{
+  background:#ef4444;
+}
+
+/* ACTIVITY */
+.activity-section{
+  background:white;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.activity-section h2{
+  margin-bottom:20px;
+}
+
+.activity-card{
+  padding:15px;
+  background:#f8fafc;
+  border-radius:12px;
+  margin-bottom:12px;
+}
+
+/* EMPTY */
+.empty-text{
+  color:#64748b;
+}

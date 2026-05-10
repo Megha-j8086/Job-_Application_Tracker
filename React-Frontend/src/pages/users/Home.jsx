@@ -2,34 +2,62 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "../../styles/Home.css";
 
+
 const Home = () => {
   return (
     <div>
+       {/* HERO */}
+<section className="hero">
 
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-text">
-          <h1>Track Smarter. Get Hired Faster.</h1>
-          <p>
-            Manage your job applications and track progress easily.
-          </p>
+  {/* LEFT CONTENT */}
+  <div className="hero-content">
 
-          <div className="hero-btns">
-            <Link to="/register">
-              <button className="btn primary">Get Started</button>
-            </Link>
+    <h1 className="hero-text">
+      Track Smarter,<br />
+      Get Hired
+      <span> Faster</span>
+    </h1>
 
-            <Link to="/trackjob">
-              <button className="btn outline">Track Jobs</button>
-            </Link>
-          </div>
-        </div>
-      </section>
+    <p>
+      SmartJob helps you discover jobs
+      based on your skills, track your
+      applications, and manage your
+      career journey professionally.
+    </p>
 
+    <div className="hero-btns">
+
+      <button className="btn primary">
+        
+        Get Started 
+      </button>
+
+      <button className="btn outline">
+         
+        Track Jobs
+      </button>
+
+    </div>
+
+  </div>
+
+  {/* RIGHT IMAGE */}
+  <div className="hero-image">
+
+    <img
+      src="/dashboard.png"
+      alt="dashboard"
+    />
+
+  </div>
+
+</section>
+  
       {/* FEATURES */}
       <section className="features">
         <h2>Features</h2>
-
+        <h3>Everything You Need to Stay Ahead</h3>
+        <p>Powerful features to help you track,manage and land your dream job</p>
         <div className="cards">
           <div className="card">
             <h3>📌 Track Applications</h3>
@@ -86,7 +114,16 @@ const Home = () => {
 
   </div>
 </section>
+  
+<div className="container">
+  <h2>Ready To Take Control of your Career?</h2>
+  <p>Join thousands of job seekers who are tracking smarter and getting hired faster.</p>
 
+
+  <button className="outline">
+     <Link to="/register" className="back-link">
+    Create Your Account </Link></button>
+</div>
     </div>
   );
 };

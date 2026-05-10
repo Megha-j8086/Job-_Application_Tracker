@@ -1,71 +1,97 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../styles/Login.css";
 
 const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
-const navigate = useNavigate();
-  const validate = () => {
-    let err = {};
-    if (!form.email.includes("@")) err.email = "Invalid email";
-    if (!form.password) err.password = "Password required";
-    return err;
-  };
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
 
- const handleSubmit = (e) => {
-  e.preventDefault();
-  const validationErrors = validate();
+  const [error, setError] = useState("");
 
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    setSuccess("");
-  } else {
-    setErrors({});
-    setSuccess("✅ Login Successful!");
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    setForm({ email: "", password: "" });
+    // GET REGISTERED USER
+    const savedUser = JSON.parse(
+      localStorage.getItem("user")
+    );
 
-    // 🚀 Redirect after 1.5 sec
-    setTimeout(() => {
+    // CHECK LOGIN
+    if (
+      savedUser &&
+      savedUser.email === form.email &&
+      savedUser.password === form.password
+    ) {
+      // SAVE LOGGED USER
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(savedUser)
+      );
+
+      alert("✅ Login Successful");
+
       navigate("/dashboard");
-    }, 1500);
-  }
-};
-
-
+    } else {
+      setError("❌ Invalid Email or Password");
+    }
+  };
 
   return (
     <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSubmit}>
+
+      <form
+        className="auth-form"
+        onSubmit={handleSubmit}
+      >
         <h2>Login</h2>
 
-        {success && <div className="success">{success}</div>}
-        
+        {error && (
+          <p className="error">{error}</p>
+        )}
+
         <input
           type="email"
           placeholder="Email"
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              email: e.target.value,
+            })
+          }
+          required
         />
-        {errors.email && <p className="error">{errors.email}</p>}
 
         <input
           type="password"
           placeholder="Password"
           value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              password: e.target.value,
+            })
+          }
+          required
         />
-        {errors.password && <p className="error">{errors.password}</p>}
 
-        <button className="btn primary">Login</button>
+        <button className="btn primary">
+          Login
+        </button>
 
         <p className="switch-link">
-          Don’t have an account? <Link to="/register">Register</Link>
+          Don’t have an account?
+          <Link to="/register">
+            {" "}Register
+          </Link>
         </p>
+
       </form>
+
     </div>
   );
 };

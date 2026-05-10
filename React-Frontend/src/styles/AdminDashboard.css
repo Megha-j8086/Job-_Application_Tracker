@@ -1,0 +1,94 @@
+
+
+.admin-page{
+  display: flex;
+  min-height: 100vh;
+  background: #f4f7ff;
+  font-family: Arial, sans-serif;
+}
+
+/* SIDEBAR */
+.admin-sidebar{
+  width: 260px;
+  background: #111827;
+  color: white;
+  padding: 30px 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.admin-sidebar h2{
+  text-align: center;
+  margin-bottom: 40px;
+  color: #60a5fa;
+}
+
+.admin-sidebar ul{
+  list-style: none;
+  padding: 0;
+}
+
+.admin-sidebar ul li{
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.admin-sidebar ul li:hover{
+  background: #1f2937;
+}
+
+/* MAIN */
+.admin-main{
+  flex: 1;
+  padding: 40px;
+}
+
+.admin-main h1{
+  margin-bottom: 30px;
+  color: #111827;
+}
+
+/* DASHBOARD CARDS */
+.admin-cards{
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 20px;
+}
+
+.admin-card{
+  padding: 30px;
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.admin-card:hover{
+  transform: translateY(-5px);
+}
+
+.admin-card h2{
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.blue{
+  background: linear-gradient(135deg,#2563eb,#60a5fa);
+}
+
+.green{
+  background: linear-gradient(135deg,#16a34a,#4ade80);
+}
+
+.purple{
+  background: linear-gradient(135deg,#7c3aed,#a78bfa);
+}
+
+.orange{
+  background: linear-gradient(135deg,#ea580c,#fb923c);
+}
+
