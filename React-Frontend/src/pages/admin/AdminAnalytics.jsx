@@ -1,82 +1,176 @@
+import React, {
+  useEffect,
+  useState,
+} from "react";
 
-import React from "react";
+import API from "../../api/api";
+
+import {
+  useNavigate,
+} from "react-router-dom";
 
 const AdminAnalytics = () => {
 
-  const styles = {
+  // NAVIGATE
+  const navigate =
+    useNavigate();
 
-    page: {
-      padding: "40px",
-      background: "#eef2ff",
-      minHeight: "100vh",
-      fontFamily: "Arial",
-    },
+  // STATE
+  const [applications, setApplications] =
+    useState([]);
 
-    heading: {
-      marginBottom: "30px",
-    },
+  // FETCH
+  useEffect(() => {
 
-    cards: {
-      display: "grid",
-      gridTemplateColumns:
-        "repeat(auto-fit,minmax(220px,1fr))",
-      gap: "20px",
-    },
+    fetchApplications();
 
-    card: {
-      background: "white",
-      padding: "30px",
-      borderRadius: "20px",
-      textAlign: "center",
-      boxShadow:
-        "0 5px 15px rgba(0,0,0,0.08)",
-    },
+  }, []);
 
-    number: {
-      color: "#4f46e5",
-      fontSize: "2rem",
-    },
+  const fetchApplications = async () => {
 
+    try {
+
+      const res =
+        await API.get(
+          "/applications/"
+        );
+
+      setApplications(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
   };
+
+  // COUNTS
+  const total =
+    applications.length;
+
+  const applied =
+    applications.filter(
+      (app) =>
+        app.status === "Applied"
+    ).length;
+
+  const interviews =
+    applications.filter(
+      (app) =>
+        app.status === "Interview"
+    ).length;
+
+  const offers =
+    applications.filter(
+      (app) =>
+        app.status === "Offer"
+    ).length;
+
+  const rejected =
+    applications.filter(
+      (app) =>
+        app.status === "Rejected"
+    ).length;
 
   return (
 
     <div style={styles.page}>
 
-      <h1 style={styles.heading}>
-        Analytics
+      {/* BACK BUTTON */}
+      <button
+        style={styles.backBtn}
+        onClick={() =>
+          navigate("/admin-dashboard")
+        }
+      >
+        ← Back to Dashboard
+      </button>
+
+      {/* TITLE */}
+      <h1>
+        Admin Analytics
       </h1>
 
-      <div style={styles.cards}>
+      {/* CARDS */}
+      <div style={styles.grid}>
 
         <div style={styles.card}>
-          <h2 style={styles.number}>
-            85%
-          </h2>
-
-          <p>Hiring Rate</p>
+          <h2>{total}</h2>
+          <p>Total</p>
         </div>
 
         <div style={styles.card}>
-          <h2 style={styles.number}>
-            1200
-          </h2>
-
-          <p>Monthly Visitors</p>
+          <h2>{applied}</h2>
+          <p>Applied</p>
         </div>
 
         <div style={styles.card}>
-          <h2 style={styles.number}>
-            320
-          </h2>
+          <h2>{interviews}</h2>
+          <p>Interviews</p>
+        </div>
 
-          <p>Active Users</p>
+        <div style={styles.card}>
+          <h2>{offers}</h2>
+          <p>Offers</p>
+        </div>
+
+        <div style={styles.card}>
+          <h2>{rejected}</h2>
+          <p>Rejected</p>
         </div>
 
       </div>
 
     </div>
   );
+};
+
+const styles = {
+
+  page: {
+    padding: "40px",
+    background: "#f5f7fb",
+    minHeight: "100vh",
+  },
+
+  backBtn: {
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "8px",
+    background:
+      "#4f46e5",
+    color: "white",
+    cursor: "pointer",
+    marginBottom: "20px",
+  },
+
+  grid: {
+    display: "grid",
+
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(200px,1fr))",
+
+    gap: "20px",
+
+    marginTop: "30px",
+  },
+
+  card: {
+    background:
+      "white",
+
+    color: "black",
+
+    padding: "30px",
+
+    borderRadius: "14px",
+
+    textAlign: "center",
+
+    boxShadow:
+      "0 5px 15px rgba(0,0,0,0.1)",
+  },
+
 };
 
 export default AdminAnalytics;

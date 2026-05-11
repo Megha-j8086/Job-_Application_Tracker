@@ -1,72 +1,77 @@
-// ==========================
-// ManageUsers.jsx
-// ==========================
+import React, {
+  useEffect,
+  useState,
+} from "react";
 
-import React from "react";
+import API from "../../api/api";
+
+import {
+  useNavigate,
+} from "react-router-dom";
 
 const ManageUsers = () => {
 
-  const users = [
-    {
-      name: "Megha",
-      email: "megha@gmail.com",
-    },
+  const navigate =
+    useNavigate();
 
-    {
-      name: "Arjun",
-      email: "arjun@gmail.com",
-    },
-  ];
+  const [users, setUsers] =
+    useState([]);
 
-  const styles = {
+  useEffect(() => {
 
-    page: {
-      padding: "40px",
-      background: "#f8fafc",
-      minHeight: "100vh",
-      fontFamily: "Arial",
-    },
+    fetchUsers();
 
-    heading: {
-      marginBottom: "25px",
-    },
+  }, []);
 
-    table: {
-      width: "100%",
-      borderCollapse: "collapse",
-      background: "white",
-      borderRadius: "15px",
-      overflow: "hidden",
-    },
+  const fetchUsers = async () => {
 
-    th: {
-      background: "#4f46e5",
-      color: "white",
-      padding: "16px",
-      textAlign: "left",
-    },
+    try {
 
-    td: {
-      padding: "16px",
-      borderBottom: "1px solid #eee",
-    },
+      const res =
+        await API.get("/users/");
 
-    button: {
-      background: "#ef4444",
-      color: "white",
-      border: "none",
-      padding: "10px 16px",
-      borderRadius: "8px",
-      cursor: "pointer",
-    },
+      setUsers(res.data);
 
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  const deleteUser = async (id) => {
+
+    try {
+
+      await API.delete(
+        `/users/delete/${id}/`
+      );
+
+      alert("User Deleted");
+
+      fetchUsers();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
   };
 
   return (
 
     <div style={styles.page}>
 
-      <h1 style={styles.heading}>
+      <button
+        style={styles.backBtn}
+        onClick={() =>
+          navigate("/admin-dashboard")
+        }
+      >
+        ← Back to Dashboard
+      </button>
+
+      <h1>
         Manage Users
       </h1>
 
@@ -85,7 +90,7 @@ const ManageUsers = () => {
             </th>
 
             <th style={styles.th}>
-              Action
+              Actions
             </th>
 
           </tr>
@@ -94,9 +99,9 @@ const ManageUsers = () => {
 
         <tbody>
 
-          {users.map((user, index) => (
+          {users.map((user) => (
 
-            <tr key={index}>
+            <tr key={user.id}>
 
               <td style={styles.td}>
                 {user.name}
@@ -108,7 +113,12 @@ const ManageUsers = () => {
 
               <td style={styles.td}>
 
-                <button style={styles.button}>
+                <button
+                  style={styles.deleteBtn}
+                  onClick={() =>
+                    deleteUser(user.id)
+                  }
+                >
                   Delete
                 </button>
 
@@ -124,6 +134,53 @@ const ManageUsers = () => {
 
     </div>
   );
+};
+
+const styles = {
+
+  page: {
+    padding: "40px",
+    background: "#f5f7fb",
+    minHeight: "100vh",
+  },
+
+  backBtn: {
+    padding: "10px 20px",
+    background: "#4f46e5",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginBottom: "20px",
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    background: "white",
+  },
+
+  th: {
+    background: "#4f46e5",
+    color: "white",
+    padding: "15px",
+    textAlign: "left",
+  },
+
+  td: {
+    padding: "15px",
+    borderBottom: "1px solid #ddd",
+  },
+
+  deleteBtn: {
+    background: "#ef4444",
+    color: "white",
+    border: "none",
+    padding: "8px 15px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+
 };
 
 export default ManageUsers;

@@ -1,169 +1,206 @@
-import React, { useState } from "react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
 import { Link } from "react-router-dom";
+
+import API from "../../api/api";
+
 import "../../styles/Dashboard.css";
 
 const Dashboard = () => {
 
-  // LOGGED USER
-  const user =
-    JSON.parse(localStorage.getItem("loggedInUser")) || {
-      name: "User",
-      email: "user@gmail.com",
-    };
+  // USER
+  const [user, setUser] =
+    useState({});
 
-  // PROFILE DATA
-  const profile =
-    JSON.parse(localStorage.getItem("profile")) || {
-      skills: ["React", "Python"],
-      resume: "resume.pdf",
-    };
+  // JOBS
+  const [jobs, setJobs] =
+    useState([]);
 
-  // SEARCH STATE
-  const [search, setSearch] = useState("");
+  // APPLICATIONS
+  const [applications, setApplications] =
+    useState([]);
 
-  // POPUP STATE
+  // SEARCH
+  const [search, setSearch] =
+    useState("");
+
+  // JOB VIEW POPUP
   const [selectedJob, setSelectedJob] =
     useState(null);
 
-  // APPLICATIONS
-  const savedApplications =
-    JSON.parse(
-      localStorage.getItem("applications")
-    ) || [];
+  // ADD JOB POPUP
+  const [showAddPopup, setShowAddPopup] =
+    useState(false);
 
-  // REALTIME COUNTS
-  const appliedCount =
-    savedApplications.filter(
-      (job) => job.status === "Applied"
-    ).length;
+  // NEW JOB FORM
+  const [newJob, setNewJob] =
+    useState({
+      company: "",
+      role: "",
+      skill: "",
+      location: "",
+      salary: "",
+      description: "",
+    });
 
-  const interviewCount =
-    savedApplications.filter(
-      (job) => job.status === "Interview"
-    ).length;
+  // LOAD DATA
+  useEffect(() => {
 
-  const offerCount =
-    savedApplications.filter(
-      (job) => job.status === "Offer"
-    ).length;
+    const loggedUser =
+      JSON.parse(
+        localStorage.getItem("user")
+      );
 
-  const rejectedCount =
-    savedApplications.filter(
-      (job) => job.status === "Rejected"
-    ).length;
+    if (loggedUser) {
+      setUser(loggedUser);
+    }
 
-  // JOBS
-  const jobs = [
-    {
-      company: "Google",
-      role: "Frontend Developer",
-      skill: "React",
-      location: "Bangalore",
-      salary: "12 LPA",
-      description:
-        "Looking for React developers with frontend experience.",
-    },
+    fetchJobs();
+    fetchApplications();
 
-    {
-      company: "Amazon",
-      role: "Backend Developer",
-      skill: "Python",
-      location: "Hyderabad",
-      salary: "15 LPA",
-      description:
-        "Backend APIs using Python and Django.",
-    },
+  }, []);
 
-    {
-      company: "Netflix",
-      role: "UI Engineer",
-      skill: "React",
-      location: "Remote",
-      salary: "18 LPA",
-      description:
-        "Build modern UI components and dashboards.",
-    },
+  // FETCH JOBS
+  const fetchJobs = async () => {
 
-    {
-      company: "Microsoft",
-      role: "Java Developer",
-      skill: "Java",
-      location: "Chennai",
-      salary: "10 LPA",
-      description:
-        "Spring Boot backend development role.",
-    },
-  ];
+    try {
 
-  // MATCHED JOBS
-  const matchedJobs = jobs.filter(
-    (job) =>
-      profile.skills.some(
-        (skill) =>
-          skill.toLowerCase() ===
-          job.skill.toLowerCase()
-      )
-  );
+      const res =
+        await API.get("/jobs/");
 
-  // OTHER JOBS
-  const otherJobs = jobs.filter(
-    (job) =>
-      !profile.skills.some(
-        (skill) =>
-          skill.toLowerCase() ===
-          job.skill.toLowerCase()
-      )
-  );
+      setJobs(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  // FETCH APPLICATIONS
+  const fetchApplications =
+    async () => {
+
+      try {
+
+        const res =
+          await API.get(
+            "/applications/"
+          );
+
+        setApplications(res.data);
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+    };
+
+  // APPLY JOB
+  const applyJob = async (job) => {
+
+    try {
+
+      const data = {
+        company: job.company,
+        role: job.role,
+        location: job.location,
+        salary: job.salary,
+        skill: job.skill,
+        description:
+          job.description,
+        status: "Applied",
+      };
+
+      await API.post(
+        "/applications/",
+        data
+      );
+
+      alert(
+        "✅ Applied Successfully"
+      );
+
+      fetchApplications();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  // ADD NEW JOB
+  const handleAddJob =
+    async () => {
+
+      try {
+
+        await API.post(
+          "/jobs/",
+          newJob
+        );
+
+        alert(
+          "✅ Job Added Successfully"
+        );
+
+        setShowAddPopup(false);
+
+        setNewJob({
+          company: "",
+          role: "",
+          skill: "",
+          location: "",
+          salary: "",
+          description: "",
+        });
+
+        fetchJobs();
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+    };
 
   // SEARCH FILTER
-  const filteredMatchedJobs =
-    matchedJobs.filter((job) =>
+  const filteredJobs =
+    jobs.filter((job) =>
       job.role
         .toLowerCase()
         .includes(search.toLowerCase())
     );
 
-  // APPLY JOB
-  const applyJob = (job) => {
+  // COUNTS
+  const appliedCount =
+    applications.filter(
+      (job) =>
+        job.status === "Applied"
+    ).length;
 
-    const existingApplications =
-      JSON.parse(
-        localStorage.getItem("applications")
-      ) || [];
+  const interviewCount =
+    applications.filter(
+      (job) =>
+        job.status === "Interview"
+    ).length;
 
-    const alreadyApplied =
-      existingApplications.find(
-        (item) =>
-          item.company === job.company &&
-          item.role === job.role
-      );
+  const offerCount =
+    applications.filter(
+      (job) =>
+        job.status === "Offer"
+    ).length;
 
-    if (alreadyApplied) {
-      alert("⚠️ Already Applied");
-      return;
-    }
-
-    const newApplication = {
-      ...job,
-      status: "Applied",
-      appliedDate:
-        new Date().toLocaleDateString(),
-    };
-
-    const updatedApplications = [
-      ...existingApplications,
-      newApplication,
-    ];
-
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(updatedApplications)
-    );
-
-    alert("✅ Applied Successfully");
-
-    window.location.reload();
-  };
+  const rejectedCount =
+    applications.filter(
+      (job) =>
+        job.status === "Rejected"
+    ).length;
 
   return (
     <div className="dashboard">
@@ -218,6 +255,7 @@ const Dashboard = () => {
         <div className="top-bar">
 
           <div>
+
             <h1>
               Welcome,
               <span className="username">
@@ -228,11 +266,21 @@ const Dashboard = () => {
             </h1>
 
             <p>
-              Discover jobs matching your
-              skills and track your career
-              journey.
+              Track your jobs and
+              career progress.
             </p>
+
           </div>
+
+          {/* ADD JOB BUTTON */}
+          <button
+            className="add-job-btn"
+            onClick={() =>
+              setShowAddPopup(true)
+            }
+          >
+            + Add Job
+          </button>
 
         </div>
 
@@ -244,7 +292,9 @@ const Dashboard = () => {
             placeholder="Search jobs..."
             value={search}
             onChange={(e) =>
-              setSearch(e.target.value)
+              setSearch(
+                e.target.value
+              )
             }
           />
 
@@ -254,35 +304,65 @@ const Dashboard = () => {
         <div className="stats">
 
           <div className="stat-card applied-card">
-            <h2>{appliedCount}</h2>
-            <p>Appliedcations</p>
+
+            <h2>
+              {appliedCount}
+            </h2>
+
+            <p>
+              Applied
+            </p>
+
           </div>
 
           <div className="stat-card interview-card">
-            <h2>{interviewCount}</h2>
-            <p>Interviews</p>
+
+            <h2>
+              {interviewCount}
+            </h2>
+
+            <p>
+              Interviews
+            </p>
+
           </div>
 
           <div className="stat-card offer-card">
-            <h2>{offerCount}</h2>
-            <p>Offers</p>
+
+            <h2>
+              {offerCount}
+            </h2>
+
+            <p>
+              Offers
+            </p>
+
           </div>
 
           <div className="stat-card rejected-card">
-            <h2>{rejectedCount}</h2>
-            <p>Rejections</p>
+
+            <h2>
+              {rejectedCount}
+            </h2>
+
+            <p>
+              Rejected
+            </p>
+
           </div>
 
         </div>
 
-        {/* RECOMMENDED JOBS */}
+        {/* JOBS */}
         <section className="jobs-section">
 
-          <h2>Recommended Jobs</h2>
+          <h2>
+            Available Jobs
+          </h2>
 
           <div className="jobs-grid">
 
-            {filteredMatchedJobs.map(
+            {filteredJobs.map(
               (job, index) => (
 
                 <div
@@ -290,11 +370,17 @@ const Dashboard = () => {
                   key={index}
                 >
 
-                  <h3>{job.role}</h3>
+                  <h3>
+                    {job.role}
+                  </h3>
 
-                  <p>{job.company}</p>
+                  <p>
+                    {job.company}
+                  </p>
 
-                  <span>{job.location}</span>
+                  <span>
+                    {job.location}
+                  </span>
 
                   <div className="job-buttons">
 
@@ -310,7 +396,9 @@ const Dashboard = () => {
                     <button
                       className="view-btn"
                       onClick={() =>
-                        setSelectedJob(job)
+                        setSelectedJob(
+                          job
+                        )
                       }
                     >
                       View
@@ -328,7 +416,7 @@ const Dashboard = () => {
 
       </main>
 
-      {/* POPUP */}
+      {/* VIEW JOB POPUP */}
       {selectedJob && (
 
         <div className="popup-overlay">
@@ -340,38 +428,180 @@ const Dashboard = () => {
             </h2>
 
             <p>
-              <strong>Company:</strong>{" "}
-              {selectedJob.company}
+              <strong>
+                Company:
+              </strong>{" "}
+              {
+                selectedJob.company
+              }
             </p>
 
             <p>
-              <strong>Location:</strong>{" "}
-              {selectedJob.location}
+              <strong>
+                Location:
+              </strong>{" "}
+              {
+                selectedJob.location
+              }
             </p>
 
             <p>
-              <strong>Salary:</strong>{" "}
-              {selectedJob.salary}
+              <strong>
+                Salary:
+              </strong>{" "}
+              {
+                selectedJob.salary
+              }
             </p>
 
             <p>
-              <strong>Skill:</strong>{" "}
-              {selectedJob.skill}
+              <strong>
+                Skill:
+              </strong>{" "}
+              {
+                selectedJob.skill
+              }
             </p>
 
             <p>
-              <strong>Description:</strong>{" "}
-              {selectedJob.description}
+              <strong>
+                Description:
+              </strong>{" "}
+              {
+                selectedJob.description
+              }
             </p>
 
             <button
               className="close-btn"
               onClick={() =>
-                setSelectedJob(null)
+                setSelectedJob(
+                  null
+                )
               }
             >
               Close
             </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+      {/* ADD JOB POPUP */}
+      {showAddPopup && (
+
+        <div className="popup-overlay">
+
+          <div className="popup">
+
+            <h2>
+              Add New Job
+            </h2>
+
+            <input
+              type="text"
+              placeholder="Company"
+              value={newJob.company}
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  company:
+                    e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Role"
+              value={newJob.role}
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  role:
+                    e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Skill"
+              value={newJob.skill}
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  skill:
+                    e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Location"
+              value={newJob.location}
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  location:
+                    e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Salary"
+              value={newJob.salary}
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  salary:
+                    e.target.value,
+                })
+              }
+            />
+
+            <textarea
+              placeholder="Description"
+              value={
+                newJob.description
+              }
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  description:
+                    e.target.value,
+                })
+              }
+            />
+
+            <div className="popup-buttons">
+
+              <button
+                className="apply-btn"
+                onClick={
+                  handleAddJob
+                }
+              >
+                Add Job
+              </button>
+
+              <button
+                className="close-btn"
+                onClick={() =>
+                  setShowAddPopup(
+                    false
+                  )
+                }
+              >
+                Cancel
+              </button>
+
+            </div>
 
           </div>
 

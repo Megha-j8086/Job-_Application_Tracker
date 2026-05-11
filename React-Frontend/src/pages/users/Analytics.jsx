@@ -1,12 +1,46 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import API from "../../api/api";
+
 import "../../styles/Analytics.css";
 
 const Analytics = () => {
 
-  // GET APPLICATIONS
-  const applications =
-    JSON.parse(localStorage.getItem("applications")) || [];
+  // APPLICATIONS STATE
+  const [applications, setApplications] =
+    useState([]);
+
+  // FETCH APPLICATIONS
+  useEffect(() => {
+
+    fetchApplications();
+
+  }, []);
+
+  const fetchApplications = async () => {
+
+    try {
+
+      const res =
+        await API.get(
+          "/applications/"
+        );
+
+      setApplications(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
 
   // TOTAL COUNTS
   const totalApplications =
@@ -14,22 +48,26 @@ const Analytics = () => {
 
   const appliedCount =
     applications.filter(
-      (job) => job.status === "Applied"
+      (job) =>
+        job.status === "Applied"
     ).length;
 
   const interviewCount =
     applications.filter(
-      (job) => job.status === "Interview"
+      (job) =>
+        job.status === "Interview"
     ).length;
 
   const offerCount =
     applications.filter(
-      (job) => job.status === "Offer"
+      (job) =>
+        job.status === "Offer"
     ).length;
 
   const rejectedCount =
     applications.filter(
-      (job) => job.status === "Rejected"
+      (job) =>
+        job.status === "Rejected"
     ).length;
 
   // PERCENTAGES
@@ -52,12 +90,14 @@ const Analytics = () => {
       : 0;
 
   return (
+
     <div className="analytics-page">
 
       {/* HEADER */}
       <div className="analytics-header">
 
         <div>
+
           <Link
             to="/dashboard"
             className="back-link"
@@ -70,9 +110,10 @@ const Analytics = () => {
           </h1>
 
           <p>
-            Track your job application
+            Track your application
             progress in realtime
           </p>
+
         </div>
 
       </div>
@@ -81,23 +122,43 @@ const Analytics = () => {
       <div className="analytics-stats">
 
         <div className="analytics-card applied">
-          <h2>{appliedCount}</h2>
+
+          <h2>
+            {appliedCount}
+          </h2>
+
           <p>Applied</p>
+
         </div>
 
         <div className="analytics-card interview">
-          <h2>{interviewCount}</h2>
+
+          <h2>
+            {interviewCount}
+          </h2>
+
           <p>Interviews</p>
+
         </div>
 
         <div className="analytics-card offer">
-          <h2>{offerCount}</h2>
+
+          <h2>
+            {offerCount}
+          </h2>
+
           <p>Offers</p>
+
         </div>
 
         <div className="analytics-card rejected">
-          <h2>{rejectedCount}</h2>
+
+          <h2>
+            {rejectedCount}
+          </h2>
+
           <p>Rejected</p>
+
         </div>
 
       </div>
@@ -108,49 +169,61 @@ const Analytics = () => {
         {/* INTERVIEW RATE */}
         <div className="progress-card">
 
-          <h3>Interview Success Rate</h3>
+          <h3>
+            Interview Success Rate
+          </h3>
 
           <div className="progress-bar">
 
             <div
               className="progress-fill interview-fill"
               style={{
-                width: `${interviewRate}%`,
+                width:
+                  `${interviewRate}%`,
               }}
             ></div>
 
           </div>
 
-          <p>{interviewRate}%</p>
+          <p>
+            {interviewRate}%
+          </p>
 
         </div>
 
         {/* OFFER RATE */}
         <div className="progress-card">
 
-          <h3>Offer Success Rate</h3>
+          <h3>
+            Offer Success Rate
+          </h3>
 
           <div className="progress-bar">
 
             <div
               className="progress-fill offer-fill"
               style={{
-                width: `${offerRate}%`,
+                width:
+                  `${offerRate}%`,
               }}
             ></div>
 
           </div>
 
-          <p>{offerRate}%</p>
+          <p>
+            {offerRate}%
+          </p>
 
         </div>
 
       </div>
 
-      {/* APPLICATION STATUS TABLE */}
+      {/* APPLICATION TABLE */}
       <div className="status-section">
 
-        <h2>Application Status</h2>
+        <h2>
+          Application Status
+        </h2>
 
         {applications.length > 0 ? (
 
@@ -159,9 +232,19 @@ const Analytics = () => {
             <thead>
 
               <tr>
-                <th>Company</th>
-                <th>Role</th>
-                <th>Status</th>
+
+                <th>
+                  Company
+                </th>
+
+                <th>
+                  Role
+                </th>
+
+                <th>
+                  Status
+                </th>
+
               </tr>
 
             </thead>
@@ -169,9 +252,9 @@ const Analytics = () => {
             <tbody>
 
               {applications.map(
-                (job, index) => (
+                (job) => (
 
-                  <tr key={index}>
+                  <tr key={job.id}>
 
                     <td>
                       {job.company}
@@ -202,7 +285,7 @@ const Analytics = () => {
         ) : (
 
           <p className="empty-text">
-            No applications found
+            No Applications Found
           </p>
 
         )}
@@ -212,25 +295,32 @@ const Analytics = () => {
       {/* RECENT ACTIVITY */}
       <div className="activity-section">
 
-        <h2>Recent Activity</h2>
+        <h2>
+          Recent Activity
+        </h2>
 
         {applications.length > 0 ? (
 
           applications.map(
-            (job, index) => (
+            (job) => (
 
               <div
                 className="activity-card"
-                key={index}
+                key={job.id}
               >
+
                 ✅ Applied for{" "}
+
                 <strong>
                   {job.role}
-                </strong>{" "}
-                at{" "}
+                </strong>
+
+                {" "}at{" "}
+
                 <strong>
                   {job.company}
                 </strong>
+
               </div>
             )
           )
@@ -238,7 +328,7 @@ const Analytics = () => {
         ) : (
 
           <p className="empty-text">
-            No recent activity
+            No Recent Activity
           </p>
 
         )}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import "../../styles/Login.css";
+import API from "../../api/api";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,88 +11,51 @@ const Login = () => {
     password: "",
   });
 
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // GET REGISTERED USER
-    const savedUser = JSON.parse(
-      localStorage.getItem("user")
-    );
+    try {
+      const res = await API.post("/users/login/", form);
 
-    // CHECK LOGIN
-    if (
-      savedUser &&
-      savedUser.email === form.email &&
-      savedUser.password === form.password
-    ) {
-      // SAVE LOGGED USER
-      localStorage.setItem(
-        "loggedInUser",
-        JSON.stringify(savedUser)
-      );
+      localStorage.setItem("user", JSON.stringify(res.data));
 
-      alert("✅ Login Successful");
-
+      alert("Login Success");
       navigate("/dashboard");
-    } else {
-      setError("❌ Invalid Email or Password");
+    } catch (error) {
+      alert("Invalid login");
+      console.log(error);
     }
   };
 
   return (
     <div className="auth-container">
-
-      <form
-        className="auth-form"
-        onSubmit={handleSubmit}
-      >
+      <form className="auth-form" onSubmit={handleLogin}>
         <h2>Login</h2>
-
-        {error && (
-          <p className="error">{error}</p>
-        )}
 
         <input
           type="email"
           placeholder="Email"
-          value={form.email}
           onChange={(e) =>
-            setForm({
-              ...form,
-              email: e.target.value,
-            })
+            setForm({ ...form, email: e.target.value })
           }
-          required
         />
 
         <input
           type="password"
           placeholder="Password"
-          value={form.password}
           onChange={(e) =>
-            setForm({
-              ...form,
-              password: e.target.value,
-            })
+            setForm({ ...form, password: e.target.value })
           }
-          required
         />
 
-        <button className="btn primary">
+        <button type="submit" className="btn primary">
           Login
         </button>
 
         <p className="switch-link">
-          Don’t have an account?
-          <Link to="/register">
-            {" "}Register
-          </Link>
+          Don’t have an account? <Link to="/register">Register</Link>
         </p>
-
       </form>
-
     </div>
   );
 };

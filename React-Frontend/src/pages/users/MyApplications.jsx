@@ -1,33 +1,66 @@
-import React, { useState } from "react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import API from "../../api/api";
+
 import "../../styles/MyApplications.css";
-import { Link } from "react-router-dom";
 
 const MyApplications = () => {
 
-  // GET APPLICATIONS
   const [applications, setApplications] =
-    useState(
-      JSON.parse(
-        localStorage.getItem("applications")
-      ) || []
-    );
+    useState([]);
+
+  // FETCH APPLICATIONS
+  useEffect(() => {
+
+    fetchApplications();
+
+  }, []);
+
+  const fetchApplications = async () => {
+
+    try {
+
+      const res =
+        await API.get(
+          "/applications/"
+        );
+
+      setApplications(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
 
   // DELETE APPLICATION
-  const handleDelete = (index) => {
+  const handleDelete = async (id) => {
 
-    const updatedApplications =
-      applications.filter(
-        (_, i) => i !== index
+    try {
+
+      await API.delete(
+        `/applications/${id}/`
       );
 
-    setApplications(updatedApplications);
+      fetchApplications();
 
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(updatedApplications)
-    );
+      alert(
+        "Application Deleted"
+      );
 
-    alert("❌ Application Deleted");
+    } catch (error) {
+
+      console.log(error);
+
+    }
   };
 
   return (
@@ -40,35 +73,52 @@ const MyApplications = () => {
         ← Back to Dashboard
       </Link>
 
-      <h1>My Applications</h1>
+      <h1>
+        My Applications
+      </h1>
 
       {applications.length > 0 ? (
 
-        applications.map((job, index) => (
-         <div className="application-card" key={index}>
+        applications.map((job) => (
 
-  <div>
-    <h3>{job.role}</h3>
-    <p>{job.company}</p>
-  </div>
+          <div
+            className="application-card"
+            key={job.id}
+          >
 
-  <div className="application-actions">
+            <div>
 
-    <span className="status">
-      Applied
-    </span>
+              <h3>
+                {job.role}
+              </h3>
 
-    <button
-      className="delete-btn"
-      onClick={() => handleDelete(index)}
-    >
-      Delete
-    </button>
+              <p>
+                {job.company}
+              </p>
 
-  </div>
+            </div>
 
-</div>
-         
+            <div className="application-actions">
+
+              <span
+                className={`status ${job.status.toLowerCase()}`}
+              >
+                {job.status}
+              </span>
+
+              <button
+                className="delete-btn"
+                onClick={() =>
+                  handleDelete(job.id)
+                }
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
         ))
 
       ) : (

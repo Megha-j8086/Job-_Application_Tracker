@@ -402,3 +402,162 @@ body{
   }
 
 }
+/* ADD JOB BUTTON */
+
+.add-job-btn {
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.add-job-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+
+/* POPUP OVERLAY */
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+}
+
+
+/* POPUP BOX */
+
+.popup {
+  background: white;
+  width: 450px;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  animation: popupShow 0.3s ease;
+}
+
+
+/* POPUP ANIMATION */
+
+@keyframes popupShow {
+
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+/* POPUP TITLE */
+
+.popup h2 {
+  text-align: center;
+  color: #4f46e5;
+  margin-bottom: 10px;
+}
+
+
+/* INPUTS */
+
+.popup input,
+.popup textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.popup input:focus,
+.popup textarea:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 5px rgba(124,58,237,0.3);
+}
+
+
+/* TEXTAREA */
+
+.popup textarea {
+  min-height: 100px;
+  resize: none;
+}
+
+
+/* BUTTONS */
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+
+/* ADD BUTTON */
+
+.apply-btn {
+  flex: 1;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.apply-btn:hover {
+  background: #4338ca;
+}
+
+
+/* CANCEL BUTTON */
+
+.close-btn {
+  flex: 1;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.close-btn:hover {
+  background: #dc2626;
+}

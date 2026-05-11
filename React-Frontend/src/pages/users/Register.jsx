@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import "../../styles/Register.css";
+import API from "../../api/api";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
+
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -11,86 +13,59 @@ const Register = () => {
     password: "",
   });
 
-  const [success, setSuccess] = useState("");
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // SAVE USER
-    localStorage.setItem(
-      "user",
-      JSON.stringify(form)
-    );
+    try {
+      await API.post("/users/register/", form);
 
-    setSuccess("✅ Registration Successful!");
-
-    setTimeout(() => {
+      alert("Account Created Successfully");
       navigate("/log");
-    }, 1500);
+
+    } catch (error) {
+      console.log(error);
+      alert("Registration Failed");
+    }
   };
 
   return (
     <div className="auth-container">
 
-      <form
-        className="auth-form"
-        onSubmit={handleSubmit}
-      >
+      <form className="auth-form" onSubmit={handleSubmit}>
+
         <h2>Create Account</h2>
 
-        {success && (
-          <div className="success">
-            {success}
-          </div>
-        )}
-
         <input
-          type="text"
+          className="input"
           placeholder="Name"
           value={form.name}
           onChange={(e) =>
-            setForm({
-              ...form,
-              name: e.target.value,
-            })
+            setForm({ ...form, name: e.target.value })
           }
-          required
         />
 
         <input
-          type="email"
+          className="input"
           placeholder="Email"
           value={form.email}
           onChange={(e) =>
-            setForm({
-              ...form,
-              email: e.target.value,
-            })
+            setForm({ ...form, email: e.target.value })
           }
-          required
         />
 
         <input
+          className="input"
           type="password"
           placeholder="Password"
           value={form.password}
           onChange={(e) =>
-            setForm({
-              ...form,
-              password: e.target.value,
-            })
+            setForm({ ...form, password: e.target.value })
           }
-          required
         />
 
-        <button className="btn primary">
+        <button className="btn primary" type="submit">
           Register
         </button>
-
-        <p className="switch-link">
-          Already have an account?
-          <Link to="/log"> Login</Link>
-        </p>
 
       </form>
 

@@ -18,7 +18,7 @@ import TrackJobs from "./pages/users/TrackJobs";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageJobs from "./pages/admin/ManageJobs";
-import Applications from "./pages/admin/Applications";
+import ManageApplications from "./pages/admin/ManageApplications";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 import { Routes, Route } from "react-router-dom";
@@ -52,12 +52,15 @@ const App = () => {
        <Route path="/about" element={<About />} />
        <Route path="/trackjobs" element={<TrackJobs />} />
 
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/manage-users" element={<ManageUsers />} />
       <Route path="/manage-jobs" element={<ManageJobs />} />
-      <Route path="/admin-applications" element={<Applications />} />
-      <Route path="/admin-analytics" element={<AdminAnalytics />} />
       
+      <Route path="/admin-analytics" element={<AdminAnalytics />} />
+      <Route
+      path="/admin-applications"
+      element={<ManageApplications />}
+    />
       </Routes>
 
       <Footer />
