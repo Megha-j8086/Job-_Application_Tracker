@@ -1,33 +1,9 @@
 from django.urls import path
-
-from .views import (
-    jobs_list,
-    delete_job,update_job,add_job
-)
+from .views import jobs_list, add_job, update_job, delete_job
 
 urlpatterns = [
-
-    path(
-        '',
-        jobs_list
-    ),
-
-    path(
-        'delete/<int:id>/',
-        delete_job
-    ),
-    path(
-    'update/<int:id>/',
-    update_job
-),
-
-path(
-    'delete/<int:id>/',
-    delete_job
-),
-path(
-        'add/',
-        add_job
-    ),
-
+    path('', jobs_list, name="jobs-list"),
+    path('add/', add_job, name="create-job"),
+    path('update/<int:id>/', update_job, name="update-job"),
+    path('delete/<int:id>/', delete_job, name="delete-job"),
 ]

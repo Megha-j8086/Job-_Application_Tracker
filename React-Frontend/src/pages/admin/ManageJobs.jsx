@@ -133,7 +133,7 @@ const [description, setDescription] =
     try {
 
       await API.post(
-        "/applications/",
+        "/jobs/",
         {
           company,
           role,

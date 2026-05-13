@@ -1,71 +1,126 @@
-import React, { useState } from "react";
-import "../../styles/Register.css";
+import React, {
+  useState
+} from "react";
+
+import {
+  useNavigate,
+  Link
+} from "react-router-dom";
+
 import API from "../../api/api";
-import { useNavigate } from "react-router-dom";
+
+import "../../styles/Login.css";
 
 const Register = () => {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [form, setForm] =
+    useState({
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+      name: "",
+      email: "",
+      password: "",
 
-    try {
-      await API.post("/users/register/", form);
+    });
 
-      alert("Account Created Successfully");
-      navigate("/log");
+  const handleChange =
+    (e) => {
 
-    } catch (error) {
-      console.log(error);
-      alert("Registration Failed");
-    }
-  };
+      setForm({
+
+        ...form,
+
+        [e.target.name]:
+          e.target.value
+
+      });
+    };
+
+  const handleSubmit =
+    async (e) => {
+
+      e.preventDefault();
+
+      try {
+
+        const res =
+          await API.post(
+
+            "/users/register/",
+
+            form
+
+          );
+
+        alert(
+          res.data.message
+        );
+
+        navigate("/login");
+
+      } catch (error) {
+
+        console.log(error);
+
+        alert(
+          "Registration Failed"
+        );
+
+      }
+    };
 
   return (
+
     <div className="auth-container">
 
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <form
+        className="auth-form"
+        onSubmit={handleSubmit}
+      >
 
-        <h2>Create Account</h2>
+        <h2>
+          Register
+        </h2>
 
         <input
-          className="input"
+          type="text"
+          name="name"
           placeholder="Name"
-          value={form.name}
-          onChange={(e) =>
-            setForm({ ...form, name: e.target.value })
-          }
+          onChange={handleChange}
         />
 
         <input
-          className="input"
+          type="email"
+          name="email"
           placeholder="Email"
-          value={form.email}
-          onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
-          }
+          onChange={handleChange}
         />
 
         <input
-          className="input"
           type="password"
+          name="password"
           placeholder="Password"
-          value={form.password}
-          onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
+          onChange={handleChange}
         />
 
-        <button className="btn primary" type="submit">
+        <button
+          type="submit"
+          className="btn primary"
+        >
           Register
         </button>
+
+        <p className="switch-link">
+
+          Already have an account?
+
+          <Link to="/login">
+            Login
+          </Link>
+
+        </p>
 
       </form>
 

@@ -3,13 +3,20 @@ import React, {
   useState,
 } from "react";
 
-import { Link } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import API from "../../api/api";
 
 import "../../styles/Dashboard.css";
 
 const Dashboard = () => {
+
+  // NAVIGATE
+  const navigate =
+    useNavigate();
 
   // USER
   const [user, setUser] =
@@ -49,36 +56,56 @@ const Dashboard = () => {
   // LOAD DATA
   useEffect(() => {
 
+    const token =
+      localStorage.getItem(
+        "access"
+      );
+
+    // CHECK LOGIN
+    if (!token) {
+
+      navigate("/login");
+
+    }
+
     const loggedUser =
       JSON.parse(
-        localStorage.getItem("user")
+        localStorage.getItem(
+          "user"
+        )
       );
 
     if (loggedUser) {
+
       setUser(loggedUser);
+
     }
 
     fetchJobs();
+
     fetchApplications();
 
   }, []);
 
   // FETCH JOBS
-  const fetchJobs = async () => {
+  const fetchJobs =
+    async () => {
 
-    try {
+      try {
 
-      const res =
-        await API.get("/jobs/");
+        const res =
+          await API.get(
+            "/jobs/"
+          );
 
-      setJobs(res.data);
+        setJobs(res.data);
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
-  };
+      }
+    };
 
   // FETCH APPLICATIONS
   const fetchApplications =
@@ -91,7 +118,9 @@ const Dashboard = () => {
             "/applications/"
           );
 
-        setApplications(res.data);
+        setApplications(
+          res.data
+        );
 
       } catch (error) {
 
@@ -101,66 +130,46 @@ const Dashboard = () => {
     };
 
   // APPLY JOB
-  const applyJob = async (job) => {
-
-    try {
-
-      const data = {
-        company: job.company,
-        role: job.role,
-        location: job.location,
-        salary: job.salary,
-        skill: job.skill,
-        description:
-          job.description,
-        status: "Applied",
-      };
-
-      await API.post(
-        "/applications/",
-        data
-      );
-
-      alert(
-        "✅ Applied Successfully"
-      );
-
-      fetchApplications();
-
-    } catch (error) {
-
-      console.log(error);
-
-    }
-  };
-
-  // ADD NEW JOB
-  const handleAddJob =
-    async () => {
+  const applyJob =
+    async (job) => {
 
       try {
 
+        const data = {
+
+          company:
+            job.company,
+
+          role:
+            job.role,
+
+          location:
+            job.location,
+
+          salary:
+            job.salary,
+
+          skill:
+            job.skill,
+
+          description:
+            job.description,
+
+          status:
+            "Applied",
+
+        };
+
         await API.post(
-          "/jobs/",
-          newJob
+          "/applications/",
+          data
         );
 
         alert(
-          "✅ Job Added Successfully"
+          "✅ Applied Successfully"
         );
 
-        setShowAddPopup(false);
-
-        setNewJob({
-          company: "",
-          role: "",
-          skill: "",
-          location: "",
-          salary: "",
-          description: "",
-        });
-
-        fetchJobs();
+        fetchApplications();
 
       } catch (error) {
 
@@ -169,40 +178,95 @@ const Dashboard = () => {
       }
     };
 
+  // ADD NEW JOB
+     const handleAddJob = async () => {
+  try {
+   await API.post("/jobs/add/", newJob); // ✅ FIXED
+
+    alert("✅ Job Added Successfully");
+
+    setShowAddPopup(false);
+
+    setNewJob({
+      company: "",
+      role: "",
+      skill: "",
+      location: "",
+      salary: "",
+      description: "",
+    });
+
+    fetchJobs();
+  } catch (error) {
+    console.log(error.response?.data || error.message);
+    alert("Failed to add job");
+  }
+};
+
+  // LOGOUT
+  const handleLogout =
+    () => {
+
+      localStorage.removeItem(
+        "access"
+      );
+
+      localStorage.removeItem(
+        "refresh"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+      alert(
+        "Logged Out Successfully"
+      );
+
+      navigate("/");
+    };
+
   // SEARCH FILTER
   const filteredJobs =
     jobs.filter((job) =>
       job.role
         .toLowerCase()
-        .includes(search.toLowerCase())
+        .includes(
+          search.toLowerCase()
+        )
     );
 
   // COUNTS
   const appliedCount =
     applications.filter(
       (job) =>
-        job.status === "Applied"
+        job.status ===
+        "Applied"
     ).length;
 
   const interviewCount =
     applications.filter(
       (job) =>
-        job.status === "Interview"
+        job.status ===
+        "Interview"
     ).length;
 
   const offerCount =
     applications.filter(
       (job) =>
-        job.status === "Offer"
+        job.status ===
+        "Offer"
     ).length;
 
   const rejectedCount =
     applications.filter(
       (job) =>
-        job.status === "Rejected"
+        job.status ===
+        "Rejected"
     ).length;
 
   return (
+
     <div className="dashboard">
 
       {/* SIDEBAR */}
@@ -239,9 +303,16 @@ const Dashboard = () => {
           </li>
 
           <li>
-            <Link to="/">
+
+            <button
+              onClick={
+                handleLogout
+              }
+              className="logout-btn"
+            >
               Logout
-            </Link>
+            </button>
+
           </li>
 
         </ul>
@@ -276,7 +347,9 @@ const Dashboard = () => {
           <button
             className="add-job-btn"
             onClick={() =>
-              setShowAddPopup(true)
+              setShowAddPopup(
+                true
+              )
             }
           >
             + Add Job
@@ -387,7 +460,9 @@ const Dashboard = () => {
                     <button
                       className="apply-btn"
                       onClick={() =>
-                        applyJob(job)
+                        applyJob(
+                          job
+                        )
                       }
                     >
                       Apply
@@ -503,7 +578,9 @@ const Dashboard = () => {
             <input
               type="text"
               placeholder="Company"
-              value={newJob.company}
+              value={
+                newJob.company
+              }
               onChange={(e) =>
                 setNewJob({
                   ...newJob,
@@ -542,7 +619,9 @@ const Dashboard = () => {
             <input
               type="text"
               placeholder="Location"
-              value={newJob.location}
+              value={
+                newJob.location
+              }
               onChange={(e) =>
                 setNewJob({
                   ...newJob,

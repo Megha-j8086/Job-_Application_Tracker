@@ -21,7 +21,7 @@ urlpatterns = [
     ),
 
     path(
-        '',
+        '/users',
         get_users
     ),
 

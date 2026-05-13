@@ -1,9 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "../../styles/Home.css";
+import Features from "../../components/Features";
 
 
 const Home = () => {
+
+
   return (
     <div>
        {/* HERO */}
@@ -32,7 +35,7 @@ const Home = () => {
         Get Started 
       </button>
 
-      <button className="btn outline">
+      <button className="outline">
          
         Track Jobs
       </button>
@@ -52,31 +55,10 @@ const Home = () => {
   </div>
 
 </section>
+  <section id="features">
+  <Features />
+</section>
   
-      {/* FEATURES */}
-      <section className="features">
-        <h2>Features</h2>
-        <h3>Everything You Need to Stay Ahead</h3>
-        <p>Powerful features to help you track,manage and land your dream job</p>
-        <div className="cards">
-          <div className="card">
-            <h3>📌 Track Applications</h3>
-            <p>Store all your job applications in one place.</p>
-          </div>
-
-          <div className="card">
-            <h3>📊 Monitor Progress</h3>
-            <p>Track interview stages easily.</p>
-          </div>
-
-          <div className="card">
-            <h3>⚡ Stay Organized</h3>
-            <p>Never miss deadlines again.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* STEPS */}
       {/* STEPS */}
 <section className="steps">
   <p className="steps-subtitle">HOW IT WORKS</p>

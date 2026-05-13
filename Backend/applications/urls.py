@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .views import (
     applications_list,
     update_application,
@@ -7,19 +6,7 @@ from .views import (
 )
 
 urlpatterns = [
-
-    path(
-        '',
-        applications_list
-    ),
-
-    path(
-        'update/<int:id>/',
-        update_application
-    ),
-
-    path(
-        'delete/<int:id>/',
-        delete_application
-    ),
+    path('', applications_list, name="applications-list"),
+    path('update/<int:id>/', update_application),
+    path('delete/<int:id>/', delete_application),
 ]
