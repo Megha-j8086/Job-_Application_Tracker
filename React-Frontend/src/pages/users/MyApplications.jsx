@@ -47,7 +47,7 @@ const MyApplications = () => {
     try {
 
       await API.delete(
-        `/applications/${id}/`
+        `/applications/delete/${id}/`
       );
 
       fetchApplications();

@@ -1,15 +1,27 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: "http://127.0.0.1:8000/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 API.interceptors.request.use((config) => {
+
   const token = localStorage.getItem("access");
 
-  console.log("TOKEN:", token); // DEBUG
+  // 🚨 DO NOT SEND TOKEN FOR LOGIN/REGISTER
+  const publicRoutes = [
+    "/users/login/",
+    "/users/register/",
+  ];
 
-  if (token) {
+  const isPublic = publicRoutes.some(
+    (route) => config.url.includes(route)
+  );
+
+  if (token && !isPublic) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 

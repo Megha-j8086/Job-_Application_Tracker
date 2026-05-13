@@ -130,53 +130,33 @@ const Dashboard = () => {
     };
 
   // APPLY JOB
-  const applyJob =
-    async (job) => {
+    const applyJob = async (job) => {
 
-      try {
+  try {
 
-        const data = {
-
-          company:
-            job.company,
-
-          role:
-            job.role,
-
-          location:
-            job.location,
-
-          salary:
-            job.salary,
-
-          skill:
-            job.skill,
-
-          description:
-            job.description,
-
-          status:
-            "Applied",
-
-        };
-
-        await API.post(
-          "/applications/",
-          data
-        );
-
-        alert(
-          "✅ Applied Successfully"
-        );
-
-        fetchApplications();
-
-      } catch (error) {
-
-        console.log(error);
-
+    const res = await API.post(
+      "/applications/",
+      {
+        company: job.company,
+        role: job.role,
+        status: "Applied"
       }
-    };
+    );
+
+    console.log(res.data);
+
+    alert("Job Applied Successfully");
+
+  } catch (error) {
+
+    console.log(error.response?.data);
+
+    alert(
+      error.response?.data?.error ||
+      "Application Failed"
+    );
+  }
+};
 
   // ADD NEW JOB
      const handleAddJob = async () => {

@@ -37,40 +37,37 @@ const Register = () => {
 
       });
     };
+const handleSubmit = async (e) => {
 
-  const handleSubmit =
-    async (e) => {
+  e.preventDefault();
 
-      e.preventDefault();
+  try {
 
-      try {
-
-        const res =
-          await API.post(
-
-            "/users/register/",
-
-            form
-
-          );
-
-        alert(
-          res.data.message
-        );
-
-        navigate("/login");
-
-      } catch (error) {
-
-        console.log(error);
-
-        alert(
-          "Registration Failed"
-        );
-
+    const res = await API.post(
+      "/users/register/",
+      {
+        name: form.name,
+        email: form.email,
+        password: form.password,
       }
-    };
+    );
 
+    console.log(res.data);
+
+    alert("Registration Success");
+
+    navigate("/login");
+
+  } catch (error) {
+
+    console.log(error.response?.data);
+
+    alert(
+      error.response?.data?.error ||
+      "Registration Failed"
+    );
+  }
+};
   return (
 
     <div className="auth-container">

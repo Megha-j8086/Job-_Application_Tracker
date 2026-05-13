@@ -1,107 +1,109 @@
+from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
-from .serializers import UserSerializer
 
 
-# ✅ REGISTER (PUBLIC)
+# =========================
+# REGISTER
+# =========================
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
-    serializer = UserSerializer(data=request.data)
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response({"message": "User created successfully"})
-
-    return Response(serializer.errors, status=400)
-    
-
-
-# ✅ LOGIN (PUBLIC)
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login_user(request):
+    name = request.data.get("name")
     email = request.data.get("email")
     password = request.data.get("password")
 
-    user = User.objects.filter(email=email, password=password).first()
+    if not name or not email or not password:
 
-    if not user:
-        return Response({"error": "Invalid credentials"}, status=401)
+        return Response(
+            {"error": "All fields are required"},
+            status=400
+        )
+
+    # EMAIL EXISTS
+    if User.objects.filter(email=email).exists():
+
+        return Response(
+            {"error": "User already exists"},
+            status=400
+        )
+
+    # PASSWORD VALIDATION
+    try:
+        validate_password(password)
+
+    except Exception as e:
+
+        return Response(
+            {"error": str(e)},
+            status=400
+        )
+
+    # CREATE USER
+    user = User.objects.create_user(
+
+        username=name,   # 👈 USERNAME = NAME
+        email=email,
+        password=password
+    )
+
+    return Response({
+
+        "message": "User created successfully",
+
+        "user": {
+            "id": user.id,
+            "name": user.username,
+            "email": user.email
+        }
+    })
+
+
+# =========================
+# LOGIN
+# =========================
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_user(request):
+
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    try:
+        user = User.objects.get(email=email)
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=401
+        )
+
+    # CHECK PASSWORD
+    if not user.check_password(password):
+
+        return Response(
+            {"error": "Invalid password"},
+            status=401
+        )
 
     refresh = RefreshToken.for_user(user)
 
     return Response({
+
         "access": str(refresh.access_token),
+
         "refresh": str(refresh),
-        "user": UserSerializer(user).data
+
+        "user": {
+            "id": user.id,
+            "name": user.username,
+            "email": user.email
+        }
     })
-
-
-# ✅ PROTECTED EXAMPLE
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_users(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data)
-
-
-# DELETE USER
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def delete_user(request, id):
-
-    try:
-
-        user = User.objects.get(id=id)
-
-        user.delete()
-
-        return Response({
-            "message": "User Deleted"
-        })
-
-    except User.DoesNotExist:
-
-        return Response({
-            "error": "User not found"
-        })
-
-
-# UPDATE USER
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_user(request, id):
-
-    try:
-
-        user = User.objects.get(id=id)
-
-    except User.DoesNotExist:
-
-        return Response({
-            "error": "User not found"
-        })
-
-    serializer = UserSerializer(
-
-        user,
-
-        data=request.data,
-
-        partial=True
-
-    )
-
-    if serializer.is_valid():
-
-        serializer.save()
-
-        return Response(serializer.data)
-
-    return Response(serializer.errors)

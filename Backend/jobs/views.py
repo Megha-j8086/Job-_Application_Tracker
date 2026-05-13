@@ -1,29 +1,20 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-
 from .models import Job
 from .serializers import JobSerializer
 
 
-@api_view(['GET', 'POST'])
+# PUBLIC GET
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def jobs_list(request):
+    jobs = Job.objects.all()
+    serializer = JobSerializer(jobs, many=True)
+    return Response(serializer.data)
 
-    if request.method == 'GET':
-        jobs = Job.objects.all()
-        return Response(JobSerializer(jobs, many=True).data)
 
-    if request.method == 'POST':
-        serializer = JobSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
-# PROTECTED: add job (ONLY LOGGED IN USERS)
+# PROTECTED POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_job(request):
@@ -33,7 +24,7 @@ def add_job(request):
         serializer.save(user=request.user)
         return Response(serializer.data)
 
-    return Response(serializer.errors)
+    return Response(serializer.errors, status=400)
 
 
 # UPDATE (protected)
