@@ -48,6 +48,7 @@ const Dashboard = () => {
       company: "",
       role: "",
       skill: "",
+      experience:"",
       location: "",
       salary: "",
       description: "",
@@ -130,7 +131,7 @@ const Dashboard = () => {
     };
 
   // APPLY JOB
-    const applyJob = async (job) => {
+     const applyJob = async (job) => {
 
   try {
 
@@ -144,6 +145,9 @@ const Dashboard = () => {
     );
 
     console.log(res.data);
+
+    // REFRESH APPLICATIONS
+    fetchApplications();
 
     alert("Job Applied Successfully");
 
@@ -171,6 +175,7 @@ const Dashboard = () => {
       company: "",
       role: "",
       skill: "",
+      experience:"",
       location: "",
       salary: "",
       description: "",
@@ -517,6 +522,14 @@ const Dashboard = () => {
                 selectedJob.skill
               }
             </p>
+            <p>
+              <strong>
+                Experience:
+              </strong>{" "}
+              {
+                selectedJob.experience
+              }
+            </p>
 
             <p>
               <strong>
@@ -591,6 +604,18 @@ const Dashboard = () => {
                 setNewJob({
                   ...newJob,
                   skill:
+                    e.target.value,
+                })
+              }
+            />
+           <input
+              type="text"
+              placeholder="Experience"
+              value={newJob.experience}
+              onChange={(e) =>
+                setNewJob({
+                  ...newJob,
+                  experience:
                     e.target.value,
                 })
               }

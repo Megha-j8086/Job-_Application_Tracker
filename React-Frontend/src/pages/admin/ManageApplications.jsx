@@ -33,7 +33,7 @@ const ManageApplications = () => {
 
       const res =
         await API.get(
-          "/applications/"
+          "/admin/applications/"
         );
 
       setApplications(res.data);
@@ -54,7 +54,7 @@ const ManageApplications = () => {
     try {
 
       await API.put(
-        `/applications/update/${id}/`,
+        `/admin/applications/update/${id}/`,
         {
           status,
         }

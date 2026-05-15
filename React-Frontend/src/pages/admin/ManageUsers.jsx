@@ -40,7 +40,7 @@ const ManageUsers = () => {
     try {
 
       const res =
-        await API.get("/users/");
+        await API.get("admin/users/");
 
       setUsers(res.data);
 
@@ -57,7 +57,7 @@ const ManageUsers = () => {
     try {
 
       await API.delete(
-        `/users/delete/${id}/`
+        `/admin/users/delete/${id}/`
       );
 
       alert("User Deleted");
@@ -76,7 +76,7 @@ const ManageUsers = () => {
 
     setSelectedUser(user);
 
-    setName(user.name);
+    setName(user.first_name);
 
     setEmail(user.email);
   };
@@ -87,7 +87,7 @@ const ManageUsers = () => {
     try {
 
       await API.put(
-        `/users/update/${selectedUser.id}/`,
+        `/admin/users/update/${selectedUser.id}/`,
         {
           name,
           email,
@@ -155,7 +155,7 @@ const ManageUsers = () => {
             <tr key={user.id}>
 
               <td style={styles.td}>
-                {user.name}
+                {user.first_name}
               </td>
 
               <td style={styles.td}>

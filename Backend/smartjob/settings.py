@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'jobs',
     'applications',
+    'adminapp',
 ]
 
 MIDDLEWARE = [

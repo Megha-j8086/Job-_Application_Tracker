@@ -40,52 +40,63 @@ const Login = () => {
       });
 
     };
+
   const handleSubmit = async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
+    try {
 
-    const res = await API.post(
-      "/users/login/",
-      {
-        email: form.email,
-        password: form.password,
+      const res = await API.post(
+        "/users/login/",
+        {
+          email: form.email,
+          password: form.password,
+        }
+      );
+
+      // SAVE TOKENS
+      localStorage.setItem(
+        "access",
+        res.data.access
+      );
+
+      localStorage.setItem(
+        "refresh",
+        res.data.refresh
+      );
+
+      // SAVE USER
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
+
+      console.log(res.data);
+
+      alert("Login Success");
+
+      // ADMIN LOGIN
+      if (res.data.user.is_staff) {
+
+        navigate("/admin-dashboard");
+
+      } else {
+
+        navigate("/dashboard");
+
       }
-    );
 
-    // SAVE TOKENS
-    localStorage.setItem(
-      "access",
-      res.data.access
-    );
+    } catch (error) {
 
-    localStorage.setItem(
-      "refresh",
-      res.data.refresh
-    );
-    localStorage.setItem(
-  "user",
-  JSON.stringify(res.data.user)
-);
+      console.log(error.response?.data);
 
-    alert("Login Success");
-
-    // ✅ NAVIGATE TO DASHBOARD
-    navigate("/dashboard");
-
-  } catch (error) {
-
-    console.log(error.response?.data);
-
-    alert(
-      error.response?.data?.error ||
-      "Login Failed"
-    );
-  }
-};
-
- 
+      alert(
+        error.response?.data?.error ||
+        "Login Failed"
+      );
+    }
+  };
 
   return (
 

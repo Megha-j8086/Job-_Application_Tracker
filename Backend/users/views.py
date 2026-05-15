@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 
 from rest_framework.decorators import api_view, permission_classes
@@ -20,48 +21,35 @@ def register_user(request):
     password = request.data.get("password")
 
     if not name or not email or not password:
-
         return Response(
-            {"error": "All fields are required"},
+            {"error": "All fields required"},
             status=400
         )
 
-    # EMAIL EXISTS
-    if User.objects.filter(email=email).exists():
-
+    if User.objects.filter(username=email).exists():
         return Response(
             {"error": "User already exists"},
             status=400
         )
 
-    # PASSWORD VALIDATION
     try:
         validate_password(password)
 
     except Exception as e:
-
         return Response(
             {"error": str(e)},
             status=400
         )
 
-    # CREATE USER
     user = User.objects.create_user(
-
-        username=name,   # 👈 USERNAME = NAME
+        username=email,
         email=email,
-        password=password
+        password=password,
+        first_name=name
     )
 
     return Response({
-
-        "message": "User created successfully",
-
-        "user": {
-            "id": user.id,
-            "name": user.username,
-            "email": user.email
-        }
+        "message": "User created successfully"
     })
 
 
@@ -76,20 +64,24 @@ def login_user(request):
     password = request.data.get("password")
 
     try:
-        user = User.objects.get(email=email)
+        user_obj = User.objects.get(email=email)
 
     except User.DoesNotExist:
 
         return Response(
             {"error": "User not found"},
-            status=401
+            status=404
         )
 
-    # CHECK PASSWORD
-    if not user.check_password(password):
+    user = authenticate(
+        username=user_obj.username,
+        password=password
+    )
+
+    if user is None:
 
         return Response(
-            {"error": "Invalid password"},
+            {"error": "Invalid credentials"},
             status=401
         )
 
@@ -102,8 +94,15 @@ def login_user(request):
         "refresh": str(refresh),
 
         "user": {
+
             "id": user.id,
-            "name": user.username,
-            "email": user.email
+
+            "email": user.email,
+
+            "is_staff": user.is_staff,
+
+            "is_superuser": user.is_superuser
+
         }
     })
+    

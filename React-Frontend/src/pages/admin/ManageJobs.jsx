@@ -38,6 +38,8 @@ const ManageJobs = () => {
     useState("");
   const [skill, setSkill] =
   useState("");
+   const [experience, setExperience] =
+  useState("");
 
 const [salary, setSalary] =
   useState("");
@@ -57,7 +59,7 @@ const [description, setDescription] =
     try {
 
       const res =
-        await API.get("/jobs/");
+        await API.get("/admin/jobs/");
 
       setJobs(res.data);
 
@@ -74,7 +76,7 @@ const [description, setDescription] =
     try {
 
       await API.delete(
-        `/jobs/delete/${id}/`
+        `/admin/jobs/delete/${id}/`
       );
 
       alert("Job Deleted");
@@ -106,7 +108,7 @@ const [description, setDescription] =
     try {
 
       await API.put(
-        `/jobs/update/${selectedJob.id}/`,
+        `/admin/jobs/update/${selectedJob.id}/`,
         {
           company,
           role,
@@ -133,11 +135,12 @@ const [description, setDescription] =
     try {
 
       await API.post(
-        "/jobs/",
+        "/admin/jobs/add/",
         {
           company,
           role,
           skill,
+          experience,
           location,
           salary,
           description,
@@ -151,6 +154,7 @@ const [description, setDescription] =
       setCompany("");
       setRole("");
       setSkill("");
+      setExperience("");
       setLocation("");
       setSalary("");
       setDescription("");
@@ -323,6 +327,15 @@ const [description, setDescription] =
             value={skill}
             onChange={(e) =>
               setSkill(e.target.value)
+            }
+            style={styles.input}
+          />
+          <input
+            type="text"
+            placeholder="Experience"
+            value={experience}
+            onChange={(e) =>
+              setExperience(e.target.value)
             }
             style={styles.input}
           />

@@ -32,7 +32,7 @@ const AdminAnalytics = () => {
 
       const res =
         await API.get(
-          "/applications/"
+          "/admin/applications/"
         );
 
       setApplications(res.data);

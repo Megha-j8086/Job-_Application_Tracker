@@ -45,21 +45,141 @@
 #     app.delete()
 #     return Response({"message": "Deleted"})
 
-from rest_framework.decorators import api_view,permission_classes
+# from rest_framework.decorators import api_view,permission_classes
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+
+# from .models import Application
+# from .serializers import ApplicationSerializer
+
+
+# @api_view(['GET', 'POST'])
+# def applications_list(request):
+
+#     # GET ALL APPLICATIONS
+#     if request.method == 'GET':
+
+#         apps = Application.objects.all()
+
+#         serializer = ApplicationSerializer(
+#             apps,
+#             many=True
+#         )
+
+#         return Response(serializer.data)
+
+#     # APPLY JOB
+#     if request.method == 'POST':
+
+#         # CHECK LOGIN
+#         if not request.user.is_authenticated:
+
+#             return Response(
+#                 {"error": "Login Required"},
+#                 status=401
+#             )
+
+#         serializer = ApplicationSerializer(
+#             data=request.data
+#         )
+
+#         if serializer.is_valid():
+
+#             serializer.save(
+#                 user=request.user
+#             )
+
+#             return Response(serializer.data)
+
+#         return Response(
+#             serializer.errors,
+#             status=400
+#         )
+
+# @api_view(['DELETE'])
+# @permission_classes([IsAuthenticated])
+# def delete_application(request, id):
+
+#     try:
+
+#         app = Application.objects.get(
+#             id=id,
+#             user=request.user
+#         )
+
+#         app.delete()
+
+#         return Response({
+#             "message": "Deleted"
+#         })
+
+#     except Application.DoesNotExist:
+
+#         return Response(
+#             {"error": "Not Found"},
+#             status=404
+#         )
+
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# def update_application(request, id):
+
+#     try:
+
+#         app = Application.objects.get(id=id)
+
+#     except Application.DoesNotExist:
+
+#         return Response(
+#             {"error": "Application not found"},
+#             status=404
+#         )
+
+#     serializer = ApplicationSerializer(
+#         app,
+#         data=request.data,
+#         partial=True
+#     )
+
+#     if serializer.is_valid():
+
+#         serializer.save()
+
+#         return Response(serializer.data)
+
+#     return Response(
+#         serializer.errors,
+#         status=400
+#     )
+
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+
+from rest_framework.permissions import (
+    IsAuthenticated
+)
+
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
 from .models import Application
 from .serializers import ApplicationSerializer
 
 
+# =========================
+# GET + CREATE APPLICATION
+# =========================
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def applications_list(request):
 
-    # GET ALL APPLICATIONS
+    # GET USER APPLICATIONS ONLY
     if request.method == 'GET':
 
-        apps = Application.objects.all()
+        apps = Application.objects.filter(
+            user=request.user
+        )
 
         serializer = ApplicationSerializer(
             apps,
@@ -68,16 +188,8 @@ def applications_list(request):
 
         return Response(serializer.data)
 
-    # APPLY JOB
+    # CREATE APPLICATION
     if request.method == 'POST':
-
-        # CHECK LOGIN
-        if not request.user.is_authenticated:
-
-            return Response(
-                {"error": "Login Required"},
-                status=401
-            )
 
         serializer = ApplicationSerializer(
             data=request.data
@@ -96,6 +208,10 @@ def applications_list(request):
             status=400
         )
 
+
+# =========================
+# DELETE APPLICATION
+# =========================
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_application(request, id):
@@ -120,6 +236,10 @@ def delete_application(request, id):
             status=404
         )
 
+
+# =========================
+# UPDATE STATUS
+# =========================
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_application(request, id):
@@ -131,7 +251,7 @@ def update_application(request, id):
     except Application.DoesNotExist:
 
         return Response(
-            {"error": "Application not found"},
+            {"error": "Not Found"},
             status=404
         )
 
@@ -147,7 +267,4 @@ def update_application(request, id):
 
         return Response(serializer.data)
 
-    return Response(
-        serializer.errors,
-        status=400
-    )
+    return Response(serializer.errors)

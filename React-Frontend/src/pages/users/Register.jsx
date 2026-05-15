@@ -37,7 +37,7 @@ const Register = () => {
 
       });
     };
-const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
 
   e.preventDefault();
 
@@ -56,7 +56,7 @@ const handleSubmit = async (e) => {
 
     alert("Registration Success");
 
-    navigate("/login");
+    navigate("/log");
 
   } catch (error) {
 
