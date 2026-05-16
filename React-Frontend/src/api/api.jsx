@@ -7,10 +7,7 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("access");
 
-  const publicRoutes = [
-    "/users/login/",
-    "/users/register/",
-  ];
+  const publicRoutes = ["/users/login/", "/users/register/"];
 
   const isPublic = publicRoutes.some((route) =>
     config.url?.includes(route)
