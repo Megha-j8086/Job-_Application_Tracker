@@ -160,7 +160,7 @@ const Register = () => {
 
       alert("Registration Success");
 
-      navigate("/login"); // FIXED ROUTE
+      navigate("/log"); // FIXED ROUTE
     } catch (error) {
       console.log(error.response?.data);
 
