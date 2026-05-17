@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from .models import Recruiter
 
-from jobs.models import Job
+from jobs.models import Job, User
 from applications.models import Application
 
 
