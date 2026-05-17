@@ -3,12 +3,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from recruiter.models import Recruiter
+from .models import Profile
+from .serializers import ProfileSerializer
 
 
 # =========================
@@ -52,11 +54,8 @@ def register_user(request):
     user = User.objects.create_user(
 
         username=email,
-
         email=email,
-
         password=password,
-
         first_name=name
 
     )
@@ -77,7 +76,6 @@ def register_user(request):
 def login_user(request):
 
     email = request.data.get("email")
-
     password = request.data.get("password")
 
     try:
@@ -96,7 +94,6 @@ def login_user(request):
     user = authenticate(
 
         username=user_obj.username,
-
         password=password
 
     )
@@ -108,34 +105,95 @@ def login_user(request):
             status=401
         )
 
-    # CHECK RECRUITER
-    is_recruiter = Recruiter.objects.filter(
-        user=user
-    ).exists()
-
     refresh = RefreshToken.for_user(user)
-
 
     return Response({
 
-            "access": str(refresh.access_token),
+        "access": str(refresh.access_token),
 
-            "refresh": str(refresh),
+        "refresh": str(refresh),
 
-            "user": {
+        "user": {
 
-                "id": user.id,
+            "id": user.id,
 
-                "email": user.email,
+            "name": user.first_name,
 
-                "is_staff": user.is_staff,
+            "email": user.email,
 
-                "is_superuser": user.is_superuser,
+            "is_staff": user.is_staff,
 
-                "is_recruiter":
-                Recruiter.objects.filter(
-                    user=user
-                ).exists()
+            "is_superuser": user.is_superuser,
 
-    }
-})
+            "is_recruiter":
+            Recruiter.objects.filter(
+                user=user
+            ).exists()
+
+        }
+    })
+
+
+# =========================
+# SAVE PROFILE
+# =========================
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_profile(request):
+
+    profile, created = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+    profile.skills = request.data.get(
+        "skills"
+    )
+
+    profile.projects = request.data.get(
+        "projects"
+    )
+
+    profile.bio = request.data.get(
+        "bio"
+    )
+
+    profile.github = request.data.get(
+        "github"
+    )
+
+    profile.linkedin = request.data.get(
+        "linkedin"
+    )
+
+    # RESUME
+    if request.FILES.get("resume"):
+
+        profile.resume = request.FILES.get(
+            "resume"
+        )
+
+    profile.save()
+
+    serializer = ProfileSerializer(
+        profile
+    )
+
+    return Response(serializer.data)
+
+
+# =========================
+# GET PROFILE
+# =========================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+
+    profile, created = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+    serializer = ProfileSerializer(
+        profile
+    )
+
+    return Response(serializer.data)
