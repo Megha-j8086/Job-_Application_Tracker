@@ -202,7 +202,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ==========================================
 SECRET_KEY = 'django-insecure-)!qo!dyef#@0*)7mez%h#17fhxj*q6-)1srcj!+mqt(rj0-#_)'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -227,6 +227,7 @@ INSTALLED_APPS = [
     'jobs',
     'applications',
     'adminapp',
+    'recruiter',
 ]
 
 

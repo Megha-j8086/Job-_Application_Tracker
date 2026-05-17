@@ -8,6 +8,8 @@ from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from recruiter.models import Recruiter
+
 
 # =========================
 # REGISTER
@@ -21,35 +23,49 @@ def register_user(request):
     password = request.data.get("password")
 
     if not name or not email or not password:
+
         return Response(
             {"error": "All fields required"},
             status=400
         )
 
-    if User.objects.filter(username=email).exists():
+    if User.objects.filter(
+        username=email
+    ).exists():
+
         return Response(
             {"error": "User already exists"},
             status=400
         )
 
     try:
+
         validate_password(password)
 
     except Exception as e:
+
         return Response(
             {"error": str(e)},
             status=400
         )
 
     user = User.objects.create_user(
+
         username=email,
+
         email=email,
+
         password=password,
+
         first_name=name
+
     )
 
     return Response({
-        "message": "User created successfully"
+
+        "message":
+        "User created successfully"
+
     })
 
 
@@ -61,10 +77,14 @@ def register_user(request):
 def login_user(request):
 
     email = request.data.get("email")
+
     password = request.data.get("password")
 
     try:
-        user_obj = User.objects.get(email=email)
+
+        user_obj = User.objects.get(
+            email=email
+        )
 
     except User.DoesNotExist:
 
@@ -74,8 +94,11 @@ def login_user(request):
         )
 
     user = authenticate(
+
         username=user_obj.username,
+
         password=password
+
     )
 
     if user is None:
@@ -85,24 +108,34 @@ def login_user(request):
             status=401
         )
 
+    # CHECK RECRUITER
+    is_recruiter = Recruiter.objects.filter(
+        user=user
+    ).exists()
+
     refresh = RefreshToken.for_user(user)
+
 
     return Response({
 
-        "access": str(refresh.access_token),
+            "access": str(refresh.access_token),
 
-        "refresh": str(refresh),
+            "refresh": str(refresh),
 
-        "user": {
+            "user": {
 
-            "id": user.id,
+                "id": user.id,
 
-            "email": user.email,
+                "email": user.email,
 
-            "is_staff": user.is_staff,
+                "is_staff": user.is_staff,
 
-            "is_superuser": user.is_superuser
+                "is_superuser": user.is_superuser,
 
-        }
-    })
-    
+                "is_recruiter":
+                Recruiter.objects.filter(
+                    user=user
+                ).exists()
+
+    }
+})

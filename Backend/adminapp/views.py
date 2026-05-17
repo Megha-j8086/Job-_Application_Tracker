@@ -24,6 +24,7 @@ from .serializers import (
 # ===================================
 # CHECK ADMIN
 # ===================================
+
 def is_admin(user):
 
     return user.is_staff
@@ -37,6 +38,7 @@ def is_admin(user):
 @permission_classes([IsAuthenticated])
 def get_users(request):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -44,8 +46,10 @@ def get_users(request):
             status=403
         )
 
-    users = User.objects.all()
+    # GET USERS
+    users = User.objects.all().order_by("-id")
 
+    # SERIALIZER
     serializer = UserSerializer(
         users,
         many=True
@@ -58,6 +62,7 @@ def get_users(request):
 @permission_classes([IsAuthenticated])
 def update_user(request, id):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -67,8 +72,10 @@ def update_user(request, id):
 
     try:
 
+        # GET USER
         user = User.objects.get(id=id)
 
+        # UPDATE DATA
         user.first_name = request.data.get(
             "name",
             user.first_name
@@ -81,10 +88,11 @@ def update_user(request, id):
 
         user.username = user.email
 
+        # SAVE
         user.save()
 
         return Response({
-            "message": "User Updated"
+            "message": "User Updated Successfully"
         })
 
     except User.DoesNotExist:
@@ -99,6 +107,7 @@ def update_user(request, id):
 @permission_classes([IsAuthenticated])
 def delete_user(request, id):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -108,12 +117,14 @@ def delete_user(request, id):
 
     try:
 
+        # GET USER
         user = User.objects.get(id=id)
 
+        # DELETE USER
         user.delete()
 
         return Response({
-            "message": "User Deleted"
+            "message": "User Deleted Successfully"
         })
 
     except User.DoesNotExist:
@@ -132,6 +143,7 @@ def delete_user(request, id):
 @permission_classes([IsAuthenticated])
 def get_jobs(request):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -139,8 +151,10 @@ def get_jobs(request):
             status=403
         )
 
-    jobs = Job.objects.all()
+    # GET JOBS
+    jobs = Job.objects.all().order_by("-id")
 
+    # SERIALIZER
     serializer = JobSerializer(
         jobs,
         many=True
@@ -153,6 +167,7 @@ def get_jobs(request):
 @permission_classes([IsAuthenticated])
 def add_job(request):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -160,6 +175,7 @@ def add_job(request):
             status=403
         )
 
+    # SERIALIZER
     serializer = JobSerializer(
         data=request.data
     )
@@ -180,6 +196,7 @@ def add_job(request):
 @permission_classes([IsAuthenticated])
 def update_job(request, id):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -189,8 +206,10 @@ def update_job(request, id):
 
     try:
 
+        # GET JOB
         job = Job.objects.get(id=id)
 
+        # UPDATE JOB
         serializer = JobSerializer(
             job,
             data=request.data,
@@ -220,6 +239,7 @@ def update_job(request, id):
 @permission_classes([IsAuthenticated])
 def delete_job(request, id):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -229,12 +249,14 @@ def delete_job(request, id):
 
     try:
 
+        # GET JOB
         job = Job.objects.get(id=id)
 
+        # DELETE JOB
         job.delete()
 
         return Response({
-            "message": "Job Deleted"
+            "message": "Job Deleted Successfully"
         })
 
     except Job.DoesNotExist:
@@ -253,6 +275,7 @@ def delete_job(request, id):
 @permission_classes([IsAuthenticated])
 def get_applications(request):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -260,10 +283,12 @@ def get_applications(request):
             status=403
         )
 
-    apps = Application.objects.all()
+    # GET ALL APPLICATIONS
+    applications = Application.objects.all().order_by("-id")
 
+    # SERIALIZER
     serializer = ApplicationSerializer(
-        apps,
+        applications,
         many=True
     )
 
@@ -274,6 +299,7 @@ def get_applications(request):
 @permission_classes([IsAuthenticated])
 def update_application(request, id):
 
+    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -283,17 +309,26 @@ def update_application(request, id):
 
     try:
 
-        app = Application.objects.get(id=id)
+        # GET APPLICATION
+        application = Application.objects.get(id=id)
 
-        app.status = request.data.get(
+        # UPDATE STATUS
+        application.status = request.data.get(
             "status",
-            app.status
+            application.status
         )
 
-        app.save()
+        # SAVE
+        application.save()
+
+        # UPDATED SERIALIZER
+        serializer = ApplicationSerializer(
+            application
+        )
 
         return Response({
-            "message": "Status Updated"
+            "message": "Application Updated Successfully",
+            "application": serializer.data
         })
 
     except Application.DoesNotExist:

@@ -1,21 +1,38 @@
+# users/models.py
+
 from django.db import models
+from django.contrib.auth.models import User
 
 
-class User(models.Model):
+class Profile(models.Model):
 
-    name = models.CharField(
-        max_length=100
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
     )
 
-    email = models.EmailField(
-        unique=True
+    skills = models.TextField()
+
+    projects = models.TextField()
+
+    resume = models.FileField(
+        upload_to="resumes/",
+        null=True,
+        blank=True
     )
 
-    password = models.CharField(
-        max_length=100
+    bio = models.TextField()
+
+    github = models.URLField(
+        null=True,
+        blank=True
     )
 
-   
+    linkedin = models.URLField(
+        null=True,
+        blank=True
+    )
+
     def __str__(self):
 
-        return self.name
+        return self.user.username
