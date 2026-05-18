@@ -69,14 +69,74 @@ def register_user(request):
 
 
 # =========================
-# LOGIN
-from django.contrib.auth.models import User
+# # LOGIN
+# from django.contrib.auth.models import User
+# from django.contrib.auth import authenticate
+# from rest_framework.decorators import api_view, permission_classes
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# @api_view(["POST"])
+# def login_view(request):
+
+#     email = request.data.get("email")
+#     password = request.data.get("password")
+
+#     try:
+#         user = User.objects.get(email=email)
+
+#     except User.DoesNotExist:
+
+#         return Response(
+#             {"error": "User not found"},
+#             status=404
+#         )
+
+#     auth_user = authenticate(
+#         username=user.username,
+#         password=password
+#     )
+
+#     if auth_user is None:
+
+#         return Response(
+#             {"error": "Wrong password"},
+#             status=400
+#         )
+
+#     refresh = RefreshToken.for_user(auth_user)
+
+#     return Response({
+
+#         "access":
+#             str(refresh.access_token),
+
+#         "refresh":
+#             str(refresh),
+
+#         "user": {
+
+#             "id": auth_user.id,
+#             "name": auth_user.first_name,
+#             "email": auth_user.email,
+#             "is_staff": auth_user.is_staff,
+#             "is_recruiter":
+#                 hasattr(auth_user, "recruiter")
+
+#         }
+#     })
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from django.contrib.auth.models import User
+
+
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_view(request):
 
     email = request.data.get("email")
@@ -108,11 +168,8 @@ def login_view(request):
 
     return Response({
 
-        "access":
-            str(refresh.access_token),
-
-        "refresh":
-            str(refresh),
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
 
         "user": {
 
@@ -120,11 +177,12 @@ def login_view(request):
             "name": auth_user.first_name,
             "email": auth_user.email,
             "is_staff": auth_user.is_staff,
-            "is_recruiter":
-                hasattr(auth_user, "recruiter")
+            "is_recruiter": False
 
         }
+
     })
+
 # =========================
 # SAVE PROFILE
 # =========================
