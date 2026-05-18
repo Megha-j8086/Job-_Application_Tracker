@@ -169,6 +169,8 @@ def register_user(request):
 # =========================
 # LOGIN USER
 # =========================
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
@@ -202,8 +204,6 @@ def login_user(request):
             "is_staff": user.is_staff,
         }
     })
-
-
 # =========================
 # PROFILE
 # =========================
