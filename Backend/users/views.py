@@ -168,20 +168,21 @@ def login_view(request):
 
     return Response({
 
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
+    "access": str(refresh.access_token),
 
-        "user": {
+    "refresh": str(refresh),
 
-            "id": auth_user.id,
-            "name": auth_user.first_name,
-            "email": auth_user.email,
-            "is_staff":True,
-            "is_recruiter": False
+    "user": {
 
-        }
+        "id": auth_user.id,
+        "name": auth_user.first_name,
+        "email": auth_user.email,
+        "is_staff": auth_user.is_staff,
+        "is_recruiter": False
 
-    })
+    }
+
+})
 
 # =========================
 # SAVE PROFILE
