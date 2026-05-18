@@ -6,16 +6,10 @@ from .serializers import JobSerializer
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def jobs_list(request):
-
-    jobs = Job.objects.all()
-
-    serializer = JobSerializer(
-        jobs,
-        many=True
-    )
-
+    jobs = Job.objects.all().order_by("-id")
+    serializer = JobSerializer(jobs, many=True)
     return Response(serializer.data)
 
 @api_view(["POST"])

@@ -195,15 +195,16 @@ def login_user(request):
     refresh = RefreshToken.for_user(user)
 
     return Response({
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-        "user": {
-            "id": user.id,
-            "name": user.first_name,
-            "email": user.email,
-            "is_staff": user.is_staff,
-        }
-    })
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "name": user.first_name,
+                "email": user.email,
+                "is_staff": user.is_staff,
+                "is_recruiter": hasattr(user, "recruiter")
+            }
+        })
 # =========================
 # PROFILE
 # =========================

@@ -171,21 +171,33 @@ from .serializers import ApplicationSerializer
 # GET + CREATE APPLICATION
 # =========================
 
-@api_view(['GET', 'POST'])
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .models import Application
+from .serializers import ApplicationSerializer
+
+
+# GET + APPLY JOB (FIXED)
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def applications_list(request):
 
-    # ADMIN / RECRUITER CAN SEE ALL
-    if request.user.is_staff:
-        apps = Application.objects.all()
-    else:
-        apps = Application.objects.filter(user=request.user)
+    # USER ONLY THEIR DATA
+    if request.method == "GET":
 
-    if request.method == 'GET':
+        if request.user.is_staff or request.user.is_recruiter:
+            apps = Application.objects.all()
+        else:
+            apps = Application.objects.filter(user=request.user)
+
         serializer = ApplicationSerializer(apps, many=True)
         return Response(serializer.data)
 
-    if request.method == 'POST':
+    # APPLY JOB
+    if request.method == "POST":
+
         serializer = ApplicationSerializer(data=request.data)
 
         if serializer.is_valid():
