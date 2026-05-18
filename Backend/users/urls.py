@@ -2,19 +2,24 @@ from django.urls import path
 
 from .views import (
     register_user,
-    login_view,
-    save_profile,
-    get_profile
+    login_user,
+    profile
 )
 
 urlpatterns = [
 
-    path("register/", register_user),
+    path(
+        "register/",
+        register_user
+    ),
 
-    path("login/", login_view),
+    path(
+        "login/",
+        login_user
+    ),
 
-    path("profile/save/", save_profile),
-
-    path("profile/me/", get_profile),
-
+    path(
+        "profile/",
+        profile
+    ),
 ]

@@ -1,249 +1,119 @@
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from django.contrib.auth.password_validation import validate_password
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated
+)
+
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from recruiter.models import Recruiter
 from .models import Profile
+
 from .serializers import ProfileSerializer
 
 
 # =========================
-# REGISTER
+# REGISTER USER
 # =========================
-@api_view(['POST'])
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def register_user(request):
 
-    name = request.data.get("name")
+    username = request.data.get("username")
     email = request.data.get("email")
     password = request.data.get("password")
 
-    if not name or not email or not password:
+    if User.objects.filter(username=username).exists():
 
         return Response(
-            {"error": "All fields required"},
-            status=400
-        )
-
-    if User.objects.filter(
-        username=email
-    ).exists():
-
-        return Response(
-            {"error": "User already exists"},
-            status=400
-        )
-
-    try:
-
-        validate_password(password)
-
-    except Exception as e:
-
-        return Response(
-            {"error": str(e)},
+            {"error": "Username already exists"},
             status=400
         )
 
     user = User.objects.create_user(
-
-        username=email,
+        username=username,
         email=email,
-        password=password,
-        first_name=name
+        password=password
+    )
 
+    Profile.objects.create(
+        user=user,
+        skills="",
+        projects="",
+        bio=""
     )
 
     return Response({
-
-        "message":
-        "User created successfully"
-
+        "message": "User Registered Successfully"
     })
 
 
 # =========================
-# # LOGIN
-# from django.contrib.auth.models import User
-# from django.contrib.auth import authenticate
-# from rest_framework.decorators import api_view, permission_classes
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-# @api_view(["POST"])
-# def login_view(request):
-
-#     email = request.data.get("email")
-#     password = request.data.get("password")
-
-#     try:
-#         user = User.objects.get(email=email)
-
-#     except User.DoesNotExist:
-
-#         return Response(
-#             {"error": "User not found"},
-#             status=404
-#         )
-
-#     auth_user = authenticate(
-#         username=user.username,
-#         password=password
-#     )
-
-#     if auth_user is None:
-
-#         return Response(
-#             {"error": "Wrong password"},
-#             status=400
-#         )
-
-#     refresh = RefreshToken.for_user(auth_user)
-
-#     return Response({
-
-#         "access":
-#             str(refresh.access_token),
-
-#         "refresh":
-#             str(refresh),
-
-#         "user": {
-
-#             "id": auth_user.id,
-#             "name": auth_user.first_name,
-#             "email": auth_user.email,
-#             "is_staff": auth_user.is_staff,
-#             "is_recruiter":
-#                 hasattr(auth_user, "recruiter")
-
-#         }
-#     })
-from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from django.contrib.auth.models import User
-
+# LOGIN USER
+# =========================
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def login_view(request):
+def login_user(request):
 
-    email = request.data.get("email")
+    username = request.data.get("username")
     password = request.data.get("password")
 
-    try:
-        user = User.objects.get(email=email)
-
-    except User.DoesNotExist:
-
-        return Response(
-            {"error": "User not found"},
-            status=404
-        )
-
-    auth_user = authenticate(
-        username=user.username,
+    user = authenticate(
+        username=username,
         password=password
     )
 
-    if auth_user is None:
+    if user is not None:
 
-        return Response(
-            {"error": "Wrong password"},
-            status=400
-        )
-
-    refresh = RefreshToken.for_user(auth_user)
+        refresh = RefreshToken.for_user(user)
 
     return Response({
 
-    "access": str(refresh.access_token),
+        "access": str(refresh.access_token),
 
-    "refresh": str(refresh),
+        "refresh": str(refresh),
 
-    "user": {
+        "user": {
 
-        "id": auth_user.id,
-        "name": auth_user.first_name,
-        "email": auth_user.email,
-        "is_staff": auth_user.is_staff,
-        "is_recruiter": False
+            "id": auth_user.id,
 
-    }
+            "name": auth_user.first_name,
 
-})
+            "email": auth_user.email,
 
-# =========================
-# SAVE PROFILE
-# =========================
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def save_profile(request):
+            "is_staff": auth_user.is_staff,
 
-    profile, created = Profile.objects.get_or_create(
-        user=request.user
+            "is_recruiter":
+                hasattr(auth_user, "recruiter")
+
+        }
+
+    })
+
+    return Response(
+        {"error": "Invalid Credentials"},
+        status=401
     )
-
-    profile.skills = request.data.get(
-        "skills"
-    )
-
-    profile.projects = request.data.get(
-        "projects"
-    )
-
-    profile.bio = request.data.get(
-        "bio"
-    )
-
-    profile.github = request.data.get(
-        "github"
-    )
-
-    profile.linkedin = request.data.get(
-        "linkedin"
-    )
-
-    # RESUME
-    if request.FILES.get("resume"):
-
-        profile.resume = request.FILES.get(
-            "resume"
-        )
-
-    profile.save()
-
-    serializer = ProfileSerializer(
-        profile
-    )
-
-    return Response(serializer.data)
 
 
 # =========================
-# GET PROFILE
+# USER PROFILE
 # =========================
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_profile(request):
+def profile(request):
 
-    profile, created = Profile.objects.get_or_create(
-        user=request.user
-    )
-
-    serializer = ProfileSerializer(
-        profile
-    )
+    serializer = UserSerializer(request.user)
 
     return Response(serializer.data)
