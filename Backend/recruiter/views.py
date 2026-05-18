@@ -1,170 +1,115 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+
+from rest_framework.permissions import (
+    IsAuthenticated
+)
+
 from rest_framework.response import Response
 
-from .models import Recruiter
+from jobs.models import Job
+from jobs.serializers import JobSerializer
 
-from jobs.models import Job, User
 from applications.models import Application
+from applications.serializers import (
+    ApplicationSerializer
+)
 
 
-# RECRUITER DASHBOARD
-@api_view(["GET"])
-def recruiter_dashboard(request):
+# ==========================
+# CHECK RECRUITER
+# ==========================
 
-    recruiter = Recruiter.objects.get(
-        user=request.user
-    )
+def is_recruiter(user):
 
-    jobs = Job.objects.filter(
-        recruiter=recruiter
-    )
-
-    applications = Application.objects.filter(
-        job__recruiter=recruiter
-    )
-
-    return Response({
-
-        "total_jobs":
-        jobs.count(),
-
-        "total_applications":
-        applications.count(),
-
-        "shortlisted":
-        applications.filter(
-            status="Shortlisted"
-        ).count(),
-
-        "interviews":
-        applications.filter(
-            status="Interview"
-        ).count(),
-
-        "selected":
-        applications.filter(
-            status="Selected"
-        ).count(),
-
-        "rejected":
-        applications.filter(
-            status="Rejected"
-        ).count(),
-
-    })
+    return hasattr(user, "recruiter")
 
 
-# RECRUITER JOBS
-@api_view(["GET"])
-def recruiter_jobs(request):
+# ==========================
+# ADD JOB
+# ==========================
 
-    recruiter = Recruiter.objects.get(
-        user=request.user
-    )
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_job(request):
 
-    jobs = Job.objects.filter(
-        recruiter=recruiter
-    )
+    if not is_recruiter(request.user):
 
-    data = []
-
-    for job in jobs:
-
-        data.append({
-
-            "id": job.id,
-
-            "company":
-            job.company,
-
-            "role":
-            job.role,
-
-            "skill":
-            job.skill,
-
-            "experience":
-            job.experience,
-
-            "location":
-            job.location,
-
-            "salary":
-            job.salary,
-
-            "description":
-            job.description,
-
-        })
-
-    return Response(data)
-
-
-# VIEW APPLICANTS
-@api_view(["GET"])
-def recruiter_applicants(request):
-
-    recruiter = Recruiter.objects.get(
-        user=request.user
-    )
-
-    applications = Application.objects.filter(
-        job__recruiter=recruiter
-    )
-
-    data = []
-
-    for app in applications:
-
-        profile = getattr(
-            app.user,
-            "candidateprofile",
-            None
+        return Response(
+            {"error": "Recruiter only"},
+            status=403
         )
 
-        data.append({
+    serializer = JobSerializer(
+        data=request.data
+    )
 
-            "id": app.id,
+    if serializer.is_valid():
 
-            "username":
-            app.user.username,
+        serializer.save(
+            recruiter=request.user.recruiter
+        )
 
-            "email":
-            app.user.email,
+        return Response(serializer.data)
 
-            "company":
-            app.job.company,
-
-            "role":
-            app.job.role,
-
-            "status":
-            app.status,
-
-            "skills":
-            profile.skills if profile else "",
-
-            "projects":
-            profile.projects if profile else "",
-
-            "phone":
-            profile.phone if profile else "",
-
-            "location":
-            profile.location if profile else "",
-
-            "resume":
-            profile.resume.url
-            if profile and profile.resume
-            else "",
-
-        })
-
-    return Response(data)
+    return Response(
+        serializer.errors,
+        status=400
+    )
 
 
-# UPDATE APPLICATION STATUS
-@api_view(["PUT"])
+# ==========================
+# GET RECRUITER JOBS
+# ==========================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def recruiter_jobs(request):
+
+    jobs = Job.objects.filter(
+        recruiter=request.user.recruiter
+    )
+
+    serializer = JobSerializer(
+        jobs,
+        many=True
+    )
+
+    return Response(serializer.data)
+
+
+# ==========================
+# GET APPLICATIONS
+# ==========================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def recruiter_applications(request):
+
+    jobs = Job.objects.filter(
+        recruiter=request.user.recruiter
+    )
+
+    applications = Application.objects.filter(
+        job__in=jobs
+    )
+
+    serializer = ApplicationSerializer(
+        applications,
+        many=True
+    )
+
+    return Response(serializer.data)
+
+
+# ==========================
+# UPDATE STATUS
+# ==========================
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def update_application_status(
     request,
     id
@@ -176,26 +121,20 @@ def update_application_status(
             id=id
         )
 
-        status = request.data.get(
+        application.status = request.data.get(
             "status"
         )
-
-        application.status = status
 
         application.save()
 
         return Response({
-
             "message":
-            "Application Updated"
-
+            "Status Updated"
         })
 
     except Application.DoesNotExist:
 
-        return Response({
-
-            "error":
-            "Application Not Found"
-
-        }, status=404)
+        return Response(
+            {"error": "Not Found"},
+            status=404
+        )

@@ -1,12 +1,19 @@
 from django.urls import path
 
-from .views import *
+from .views import (
+
+    add_job,
+    recruiter_jobs,
+    recruiter_applications,
+    update_application_status
+
+)
 
 urlpatterns = [
 
     path(
-        "dashboard/",
-        recruiter_dashboard
+        "jobs/add/",
+        add_job
     ),
 
     path(
@@ -15,12 +22,12 @@ urlpatterns = [
     ),
 
     path(
-        "applicants/",
-        recruiter_applicants
+        "applications/",
+        recruiter_applications
     ),
 
     path(
-        "update-status/<int:id>/",
+        "applications/update/<int:id>/",
         update_application_status
     ),
 

@@ -3,21 +3,22 @@ from rest_framework import serializers
 from .models import Application
 
 
-class ApplicationSerializer(serializers.ModelSerializer):
-
-    # JOB DETAILS
-    role = serializers.CharField(
-        source="job.role",
-        read_only=True
-    )
+class ApplicationSerializer(
+    serializers.ModelSerializer
+):
 
     company = serializers.CharField(
         source="job.company",
         read_only=True
     )
 
-    location = serializers.CharField(
-        source="job.location",
+    role = serializers.CharField(
+        source="job.role",
+        read_only=True
+    )
+
+    user_name = serializers.CharField(
+        source="user.first_name",
         read_only=True
     )
 
@@ -25,16 +26,4 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
         model = Application
 
-        fields = [
-            "id",
-            "job",
-            "user",
-            "status",
-            "role",
-            "company",
-            "location",
-        ]
-
-        read_only_fields = [
-            "user"
-        ]
+        fields = "__all__"
