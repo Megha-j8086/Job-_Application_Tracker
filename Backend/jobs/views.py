@@ -5,8 +5,7 @@ from .models import Job
 from .serializers import JobSerializer
 
 
-# PUBLIC GET
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def jobs_list(request):
     jobs = Job.objects.all()
@@ -14,8 +13,7 @@ def jobs_list(request):
     return Response(serializer.data)
 
 
-# PROTECTED POST
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_job(request):
     serializer = JobSerializer(data=request.data)
@@ -27,11 +25,11 @@ def add_job(request):
     return Response(serializer.errors, status=400)
 
 
-# UPDATE (protected)
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_job(request, id):
-    job = Job.objects.get(id=id, user=request.user)
+    job = Job.objects.get(id=id)
+
     serializer = JobSerializer(job, data=request.data, partial=True)
 
     if serializer.is_valid():
@@ -41,10 +39,9 @@ def update_job(request, id):
     return Response(serializer.errors)
 
 
-# DELETE (protected)
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_job(request, id):
-    job = Job.objects.get(id=id, user=request.user)
+    job = Job.objects.get(id=id)
     job.delete()
     return Response({"message": "Deleted"})

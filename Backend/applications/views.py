@@ -170,44 +170,29 @@ from .serializers import ApplicationSerializer
 # =========================
 # GET + CREATE APPLICATION
 # =========================
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def applications_list(request):
 
-    # GET USER APPLICATIONS ONLY
+    # ADMIN / RECRUITER CAN SEE ALL
+    if request.user.is_staff:
+        apps = Application.objects.all()
+    else:
+        apps = Application.objects.filter(user=request.user)
+
     if request.method == 'GET':
-
-        apps = Application.objects.filter(
-            user=request.user
-        )
-
-        serializer = ApplicationSerializer(
-            apps,
-            many=True
-        )
-
+        serializer = ApplicationSerializer(apps, many=True)
         return Response(serializer.data)
 
-    # CREATE APPLICATION
     if request.method == 'POST':
-
-        serializer = ApplicationSerializer(
-            data=request.data
-        )
+        serializer = ApplicationSerializer(data=request.data)
 
         if serializer.is_valid():
-
-            serializer.save(
-                user=request.user
-            )
-
+            serializer.save(user=request.user)
             return Response(serializer.data)
 
-        return Response(
-            serializer.errors,
-            status=400
-        )
-
+        return Response(serializer.errors, status=400)
 
 # =========================
 # DELETE APPLICATION

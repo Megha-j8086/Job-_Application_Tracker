@@ -70,19 +70,20 @@ def register_user(request):
 
 # =========================
 # LOGIN
-# =========================
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login_user(request):
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+@api_view(["POST"])
+def login_view(request):
 
     email = request.data.get("email")
     password = request.data.get("password")
 
     try:
-
-        user_obj = User.objects.get(
-            email=email
-        )
+        user = User.objects.get(email=email)
 
     except User.DoesNotExist:
 
@@ -91,49 +92,39 @@ def login_user(request):
             status=404
         )
 
-    user = authenticate(
-
-        username=user_obj.username,
+    auth_user = authenticate(
+        username=user.username,
         password=password
-
     )
 
-    if user is None:
+    if auth_user is None:
 
         return Response(
-            {"error": "Invalid credentials"},
-            status=401
+            {"error": "Wrong password"},
+            status=400
         )
 
-    refresh = RefreshToken.for_user(user)
+    refresh = RefreshToken.for_user(auth_user)
 
     return Response({
 
-        "access": str(refresh.access_token),
+        "access":
+            str(refresh.access_token),
 
-        "refresh": str(refresh),
+        "refresh":
+            str(refresh),
 
         "user": {
 
-            "id": user.id,
-
-            "name": user.first_name,
-
-            "email": user.email,
-
-            "is_staff": user.is_staff,
-
-            "is_superuser": user.is_superuser,
-
+            "id": auth_user.id,
+            "name": auth_user.first_name,
+            "email": auth_user.email,
+            "is_staff": auth_user.is_staff,
             "is_recruiter":
-            Recruiter.objects.filter(
-                user=user
-            ).exists()
+                hasattr(auth_user, "recruiter")
 
         }
     })
-
-
 # =========================
 # SAVE PROFILE
 # =========================
