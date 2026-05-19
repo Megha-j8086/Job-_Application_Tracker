@@ -169,6 +169,7 @@ def register_user(request):
 # =========================
 # LOGIN USER
 # =========================
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
@@ -176,13 +177,23 @@ def login_user(request):
     username = request.data.get("username")
     password = request.data.get("password")
 
+    if not username or not password:
+        return Response(
+            {"error": "Username and password required"},
+            status=400
+        )
+
     user = authenticate(username=username, password=password)
 
     if user is None:
-        return Response({"error": "Invalid credentials"}, status=401)
+        return Response(
+            {"error": "Invalid credentials"},
+            status=401
+        )
 
     refresh = RefreshToken.for_user(user)
 
+    # GET ROLE SAFELY
     profile, _ = Profile.objects.get_or_create(user=user)
 
     return Response({
@@ -193,10 +204,9 @@ def login_user(request):
             "name": user.first_name,
             "email": user.email,
             "is_staff": user.is_staff,
-            "role": profile.role,
+            "role": profile.role
         }
     })
-
 # =========================
 # PROFILE
 # =========================
