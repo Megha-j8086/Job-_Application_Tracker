@@ -21,6 +21,14 @@ import ManageJobs from "./pages/admin/ManageJobs";
 import ManageApplications from "./pages/admin/ManageApplications";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
+
+
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import AddJob from "./pages/recruiter/AddJob";
+import RecruiterManageJobs from "./pages/recruiter/RecruiterManageJobs";
+import Applicants from "./pages/recruiter/Applicants";
+import Interviews from "./pages/recruiter/Interviews";
+import RecruiterApplications from "./pages/recruiter/RecruiterApplications";
 import { Routes, Route } from "react-router-dom";
 
 const App = () => {
@@ -49,18 +57,43 @@ const App = () => {
 
         {/* APPLICATIONS */}
         <Route path="/applications" element={<MyApplications />} />
-       <Route path="/about" element={<About />} />
-       <Route path="/trackjobs" element={<TrackJobs />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/trackjobs" element={<TrackJobs />} />
+
+
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/manage-users" element={<ManageUsers />} />
-      <Route path="/manage-jobs" element={<ManageJobs />} />
-      
-      <Route path="/admin-analytics" element={<AdminAnalytics />} />
-      <Route
-      path="/admin-applications"
-      element={<ManageApplications />}
-    />
+        <Route path="/manage-users" element={<ManageUsers />} />
+        <Route path="/manage-jobs" element={<ManageJobs />} />
+        <Route path="/admin-analytics" element={<AdminAnalytics />} />
+        <Route path="/admin-applications" element={<ManageApplications />}/>
+        <Route
+          path="/recruiter-dashboard"
+          element={<RecruiterDashboard />}
+        />
+
+        <Route
+          path="/addjob"
+          element={<AddJob />}
+        />
+
+        <Route
+          path="/managejobs"
+          element={<RecruiterManageJobs />}
+        />
+
+        <Route
+          path="/applicants"
+          element={<Applicants />}
+        />
+          <Route
+          path="/recruiter-applications"
+          element={<RecruiterApplications/>}
+        />
+        <Route
+          path="/interviews"
+          element={<Interviews />}
+        />
       </Routes>
 
       <Footer />

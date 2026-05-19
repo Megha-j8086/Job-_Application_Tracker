@@ -1,23 +1,42 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://job-application-tracker-zhly.onrender.com/api",
+
+  baseURL:
+    "https://job-application-tracker-zhly.onrender.com/api",
+
 });
 
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access");
+// ADD TOKEN IN EVERY REQUEST
+API.interceptors.request.use(
 
-  const publicRoutes = ["/users/login/", "/users/register/"];
+  (config) => {
 
-  const isPublic = publicRoutes.some((route) =>
-    config.url?.includes(route)
-  );
+    const token =
+      localStorage.getItem("access");
 
-  if (token && !isPublic) {
-    config.headers.Authorization = `Bearer ${token}`;
+    console.log(
+      "TOKEN SENT:",
+      token
+    );
+
+    if (token) {
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
+
+    }
+
+    return config;
+
+  },
+
+  (error) => {
+
+    return Promise.reject(error);
+
   }
 
-  return config;
-});
+);
 
 export default API;

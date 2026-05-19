@@ -15,8 +15,7 @@ import "../../styles/Dashboard.css";
 const Dashboard = () => {
 
   // NAVIGATE
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
   // USER
   const [user, setUser] =
@@ -34,27 +33,25 @@ const Dashboard = () => {
   const [search, setSearch] =
     useState("");
 
-  // JOB VIEW POPUP
+  // POPUP
   const [selectedJob, setSelectedJob] =
     useState(null);
 
-  // ADD JOB POPUP
-  const [showAddPopup, setShowAddPopup] =
-    useState(false);
+const [showAddJob, setShowAddJob] = useState(false);
 
-  // NEW JOB FORM
-  const [newJob, setNewJob] =
-    useState({
-      company: "",
-      role: "",
-      skill: "",
-      experience:"",
-      location: "",
-      salary: "",
-      description: "",
-    });
+const [jobForm, setJobForm] = useState({
+  role: "",
+  company: "",
+  location: "",
+  salary: "",
+  skill: "",
+  experience: "",
+  description: "",
+});
 
+  // =========================
   // LOAD DATA
+  // =========================
   useEffect(() => {
 
     const token =
@@ -65,10 +62,12 @@ const Dashboard = () => {
     // CHECK LOGIN
     if (!token) {
 
-      navigate("/login");
+      navigate("/log");
+      return;
 
     }
 
+    // GET USER
     const loggedUser =
       JSON.parse(
         localStorage.getItem(
@@ -82,13 +81,16 @@ const Dashboard = () => {
 
     }
 
+    // FETCH DATA
     fetchJobs();
 
     fetchApplications();
 
   }, []);
 
+  // =========================
   // FETCH JOBS
+  // =========================
   const fetchJobs =
     async () => {
 
@@ -99,16 +101,25 @@ const Dashboard = () => {
             "/jobs/"
           );
 
+        console.log(
+          "JOBS:",
+          res.data
+        );
+
         setJobs(res.data);
 
-      } catch (error) {
+      }
+
+      catch (error) {
 
         console.log(error);
 
       }
     };
 
+  // =========================
   // FETCH APPLICATIONS
+  // =========================
   const fetchApplications =
     async () => {
 
@@ -119,76 +130,112 @@ const Dashboard = () => {
             "/applications/"
           );
 
+        console.log(
+          "APPLICATIONS:",
+          res.data
+        );
+
         setApplications(
           res.data
         );
 
-      } catch (error) {
+      }
+
+      catch (error) {
 
         console.log(error);
 
       }
     };
-
-  // APPLY JOB
-     const applyJob = async (job) => {
-
-  try {
-
-    const res = await API.post(
-      "/applications/",
-      {
-        company: job.company,
-        role: job.role,
-        status: "Applied"
-      }
-    );
-
-    console.log(res.data);
-
-    // REFRESH APPLICATIONS
-    fetchApplications();
-
-    alert("Job Applied Successfully");
-
-  } catch (error) {
-
-    console.log(error.response?.data);
-
-    alert(
-      error.response?.data?.error ||
-      "Application Failed"
-    );
-  }
+    const handleChange = (e) => {
+  setJobForm({
+    ...jobForm,
+    [e.target.name]: e.target.value,
+  });
 };
 
-  // ADD NEW JOB
-     const handleAddJob = async () => {
+  // =========================
+  // APPLY JOB
+  // =========================
+  const applyJob =
+    async (jobId) => {
+
+      console.log(
+        "JOB ID:",
+        jobId
+      );
+
+      try {
+
+        const res =
+          await API.post(
+            "/applications/",
+            {
+              job: jobId,
+              status: "Applied"
+            }
+          );
+
+        console.log(
+          "APPLICATION CREATED:",
+          res.data
+        );
+
+        // UPDATE UI INSTANTLY
+        setApplications([
+          ...applications,
+          res.data
+        ]);
+
+        alert(
+          "Application Submitted"
+        );
+
+      }
+
+      catch (error) {
+
+        console.log(
+          error.response?.data
+        );
+
+        alert(
+          "Failed To Apply"
+        );
+
+      }
+    };
+    const addJob = async () => {
   try {
-   await API.post("/jobs/add/", newJob); // ✅ FIXED
+    const res = await API.post("/jobs/", jobForm);
 
-    alert("✅ Job Added Successfully");
+    console.log("JOB CREATED:", res.data);
 
-    setShowAddPopup(false);
+    alert("Job Added Successfully");
 
-    setNewJob({
-      company: "",
+    setJobs([res.data, ...jobs]);
+
+    setShowAddJob(false);
+
+    setJobForm({
       role: "",
-      skill: "",
-      experience:"",
+      company: "",
       location: "",
       salary: "",
+      skill: "",
+      experience: "",
       description: "",
     });
 
-    fetchJobs();
   } catch (error) {
-    console.log(error.response?.data || error.message);
+    console.log(error.response?.data);
     alert("Failed to add job");
   }
 };
 
+  // =========================
   // LOGOUT
+  // =========================
   const handleLogout =
     () => {
 
@@ -209,44 +256,49 @@ const Dashboard = () => {
       );
 
       navigate("/");
+
     };
 
+  // =========================
   // SEARCH FILTER
+  // =========================
   const filteredJobs =
     jobs.filter((job) =>
       job.role
-        .toLowerCase()
+        ?.toLowerCase()
         .includes(
           search.toLowerCase()
         )
     );
 
+  // =========================
   // COUNTS
+  // =========================
   const appliedCount =
     applications.filter(
-      (job) =>
-        job.status ===
+      (app) =>
+        app.status ===
         "Applied"
     ).length;
 
   const interviewCount =
     applications.filter(
-      (job) =>
-        job.status ===
+      (app) =>
+        app.status ===
         "Interview"
     ).length;
 
   const offerCount =
     applications.filter(
-      (job) =>
-        job.status ===
+      (app) =>
+        app.status ===
         "Offer"
     ).length;
 
   const rejectedCount =
     applications.filter(
-      (job) =>
-        job.status ===
+      (app) =>
+        app.status ===
         "Rejected"
     ).length;
 
@@ -313,32 +365,30 @@ const Dashboard = () => {
           <div>
 
             <h1>
+
               Welcome,
+
               <span className="username">
+
                 {" "}
                 {user.name}
-              </span>{" "}
+
+              </span>
+
               👋
+
             </h1>
-
-            <p>
-              Track your jobs and
-              career progress.
-            </p>
-
-          </div>
-
-          {/* ADD JOB BUTTON */}
-          <button
-            className="add-job-btn"
-            onClick={() =>
-              setShowAddPopup(
-                true
-              )
-            }
+           <button
+            className="apply-btn"
+            onClick={() => setShowAddJob(true)}
           >
             + Add Job
           </button>
+            <p>
+              Track your jobs and career progress.
+            </p>
+
+          </div>
 
         </div>
 
@@ -420,54 +470,64 @@ const Dashboard = () => {
 
           <div className="jobs-grid">
 
-            {filteredJobs.map(
-              (job, index) => (
+            {filteredJobs.length > 0 ? (
 
-                <div
-                  className="job-card"
-                  key={index}
-                >
+              filteredJobs.map(
+                (job) => (
 
-                  <h3>
-                    {job.role}
-                  </h3>
+                  <div
+                    className="job-card"
+                    key={job.id}
+                  >
 
-                  <p>
-                    {job.company}
-                  </p>
+                    <h3>
+                      {job.role}
+                    </h3>
 
-                  <span>
-                    {job.location}
-                  </span>
+                    <p>
+                      {job.company}
+                    </p>
 
-                  <div className="job-buttons">
+                    <span>
+                      {job.location}
+                    </span>
 
-                    <button
-                      className="apply-btn"
-                      onClick={() =>
-                        applyJob(
-                          job
-                        )
-                      }
-                    >
-                      Apply
-                    </button>
+                    <div className="job-buttons">
 
-                    <button
-                      className="view-btn"
-                      onClick={() =>
-                        setSelectedJob(
-                          job
-                        )
-                      }
-                    >
-                      View
-                    </button>
+                      <button
+                        className="apply-btn"
+                        onClick={() =>
+                          applyJob(
+                            job.id
+                          )
+                        }
+                      >
+                        Apply
+                      </button>
+
+                      <button
+                        className="view-btn"
+                        onClick={() =>
+                          setSelectedJob(
+                            job
+                          )
+                        }
+                      >
+                        View
+                      </button>
+
+                    </div>
 
                   </div>
-
-                </div>
+                )
               )
+
+            ) : (
+
+              <h3>
+                No Jobs Available
+              </h3>
+
             )}
 
           </div>
@@ -476,7 +536,7 @@ const Dashboard = () => {
 
       </main>
 
-      {/* VIEW JOB POPUP */}
+      {/* POPUP */}
       {selectedJob && (
 
         <div className="popup-overlay">
@@ -491,53 +551,42 @@ const Dashboard = () => {
               <strong>
                 Company:
               </strong>{" "}
-              {
-                selectedJob.company
-              }
+              {selectedJob.company}
             </p>
 
             <p>
               <strong>
                 Location:
               </strong>{" "}
-              {
-                selectedJob.location
-              }
+              {selectedJob.location}
             </p>
 
             <p>
               <strong>
                 Salary:
               </strong>{" "}
-              {
-                selectedJob.salary
-              }
+              {selectedJob.salary}
             </p>
 
             <p>
               <strong>
                 Skill:
               </strong>{" "}
-              {
-                selectedJob.skill
-              }
+              {selectedJob.skill}
             </p>
+
             <p>
               <strong>
                 Experience:
               </strong>{" "}
-              {
-                selectedJob.experience
-              }
+              {selectedJob.experience}
             </p>
 
             <p>
               <strong>
                 Description:
               </strong>{" "}
-              {
-                selectedJob.description
-              }
+              {selectedJob.description}
             </p>
 
             <button
@@ -556,143 +605,74 @@ const Dashboard = () => {
         </div>
 
       )}
+     {showAddJob && (
+  <div className="popup-overlay">
 
-      {/* ADD JOB POPUP */}
-      {showAddPopup && (
+    <div className="popup">
 
-        <div className="popup-overlay">
+      <h2>Add Job</h2>
 
-          <div className="popup">
+      <input
+        name="role"
+        placeholder="Role"
+        value={jobForm.role}
+        onChange={handleChange}
+      />
 
-            <h2>
-              Add New Job
-            </h2>
+      <input
+        name="company"
+        placeholder="Company"
+        value={jobForm.company}
+        onChange={handleChange}
+      />
 
-            <input
-              type="text"
-              placeholder="Company"
-              value={
-                newJob.company
-              }
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  company:
-                    e.target.value,
-                })
-              }
-            />
+      <input
+        name="location"
+        placeholder="Location"
+        value={jobForm.location}
+        onChange={handleChange}
+      />
 
-            <input
-              type="text"
-              placeholder="Role"
-              value={newJob.role}
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  role:
-                    e.target.value,
-                })
-              }
-            />
+      <input
+        name="salary"
+        placeholder="Salary"
+        value={jobForm.salary}
+        onChange={handleChange}
+      />
 
-            <input
-              type="text"
-              placeholder="Skill"
-              value={newJob.skill}
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  skill:
-                    e.target.value,
-                })
-              }
-            />
-           <input
-              type="text"
-              placeholder="Experience"
-              value={newJob.experience}
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  experience:
-                    e.target.value,
-                })
-              }
-            />
+      <input
+        name="skill"
+        placeholder="Skill"
+        value={jobForm.skill}
+        onChange={handleChange}
+      />
 
-            <input
-              type="text"
-              placeholder="Location"
-              value={
-                newJob.location
-              }
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  location:
-                    e.target.value,
-                })
-              }
-            />
+      <input
+        name="experience"
+        placeholder="Experience"
+        value={jobForm.experience}
+        onChange={handleChange}
+      />
 
-            <input
-              type="text"
-              placeholder="Salary"
-              value={newJob.salary}
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  salary:
-                    e.target.value,
-                })
-              }
-            />
+      <textarea
+        name="description"
+        placeholder="Description"
+        value={jobForm.description}
+        onChange={handleChange}
+      />
 
-            <textarea
-              placeholder="Description"
-              value={
-                newJob.description
-              }
-              onChange={(e) =>
-                setNewJob({
-                  ...newJob,
-                  description:
-                    e.target.value,
-                })
-              }
-            />
+      <button onClick={addJob}>
+        Submit
+      </button>
 
-            <div className="popup-buttons">
+      <button onClick={() => setShowAddJob(false)}>
+        Close
+      </button>
 
-              <button
-                className="apply-btn"
-                onClick={
-                  handleAddJob
-                }
-              >
-                Add Job
-              </button>
+    </div>
 
-              <button
-                className="close-btn"
-                onClick={() =>
-                  setShowAddPopup(
-                    false
-                  )
-                }
-              >
-                Cancel
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
+  </div>
+)}
     </div>
   );
 };

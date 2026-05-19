@@ -27,24 +27,30 @@ const ManageApplications = () => {
   }, []);
 
   // FETCH APPLICATIONS
-  const fetchApplications = async () => {
+  
+const fetchApplications = async () => {
 
-    try {
+  try {
 
-      const res =
-        await API.get(
-          "/admin/applications/"
-        );
+    const res = await API.get(
+      "/applications/"
+    );
 
-      setApplications(res.data);
+    console.log(
+      "APPLICATIONS:",
+      res.data
+    );
 
-    } catch (error) {
+    setApplications(res.data);
 
-      console.log(error);
+  }
 
-    }
-  };
+  catch (error) {
 
+    console.log(error);
+
+  }
+};
   // UPDATE STATUS
   const updateStatus = async (
     id,
