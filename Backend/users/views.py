@@ -201,8 +201,8 @@ def login_user(request):
                 "id": user.id,
                 "name": user.first_name,
                 "email": user.email,
-                "is_staff": user.is_staff,
-                "is_recruiter": hasattr(user, "recruiter")
+                "is_staff": True,
+                "is_recruiter":True,
             }
         })
 # =========================

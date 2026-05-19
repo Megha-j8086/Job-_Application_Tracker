@@ -1,27 +1,41 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from .models import Job
 from .serializers import JobSerializer
+from recruiter.models import Recruiter
 
 
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def jobs_list(request):
-    jobs = Job.objects.all().order_by("-id")
-    serializer = JobSerializer(jobs, many=True)
-    return Response(serializer.data)
-
-@api_view(["POST"])
+@api_view(["GET", "POST"])   # 🔥 THIS IS MANDATORY
 @permission_classes([IsAuthenticated])
-def add_job(request):
-    serializer = JobSerializer(data=request.data)
+def jobs_list(request):
 
-    if serializer.is_valid():
-        serializer.save(user=request.user)
+    # GET JOBS
+    if request.method == "GET":
+        jobs = Job.objects.all().order_by("-id")
+        serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
 
-    return Response(serializer.errors, status=400)
+    # POST JOB
+    if request.method == "POST":
+
+        try:
+            recruiter = Recruiter.objects.get(user=request.user)
+        except Recruiter.DoesNotExist:
+            return Response(
+                {"error": "Only recruiters can post jobs"},
+                status=403
+            )
+
+        serializer = JobSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(recruiter=recruiter)
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
 
 
 @api_view(['PUT'])
