@@ -163,6 +163,7 @@ def get_jobs(request):
     return Response(serializer.data)
 
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_job(request):
@@ -192,7 +193,6 @@ def add_job(request):
         serializer.errors,
         status=400
     )
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_job(request, id):
