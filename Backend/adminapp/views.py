@@ -163,7 +163,6 @@ def get_jobs(request):
     return Response(serializer.data)
 
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_job(request):
@@ -175,24 +174,20 @@ def add_job(request):
             status=403
         )
 
-    serializer = JobSerializer(
-        data=request.data
+    job = Job.objects.create(
+        recruiter=request.user,
+        company=request.data.get("company"),
+        role=request.data.get("role"),
+        skill=request.data.get("skill"),
+        experience=request.data.get("experience"),
+        location=request.data.get("location"),
+        salary=request.data.get("salary"),
+        description=request.data.get("description"),
     )
 
-    if serializer.is_valid():
+    serializer = JobSerializer(job)
 
-        serializer.save(
-            recruiter=request.user
-        )
-
-        return Response(serializer.data)
-
-    print(serializer.errors)
-
-    return Response(
-        serializer.errors,
-        status=400
-    )
+    return Response(serializer.data)
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_job(request, id):
