@@ -167,7 +167,6 @@ def get_jobs(request):
 @permission_classes([IsAuthenticated])
 def add_job(request):
 
-    # CHECK ADMIN
     if not is_admin(request.user):
 
         return Response(
@@ -175,22 +174,24 @@ def add_job(request):
             status=403
         )
 
-    # SERIALIZER
     serializer = JobSerializer(
         data=request.data
     )
 
     if serializer.is_valid():
 
-        serializer.save()
+        serializer.save(
+            recruiter=request.user
+        )
 
         return Response(serializer.data)
+
+    print(serializer.errors)
 
     return Response(
         serializer.errors,
         status=400
     )
-
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
