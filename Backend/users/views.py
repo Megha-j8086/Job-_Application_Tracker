@@ -224,8 +224,13 @@ def profile(request):
 # =========================
 # SAVE PROFILE
 
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def save_profile(request):
 
     profile, created = Profile.objects.get_or_create(
