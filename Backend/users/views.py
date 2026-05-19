@@ -223,7 +223,7 @@ def profile(request):
 
 # =========================
 # SAVE PROFILE
-# =========================
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def save_profile(request):
@@ -238,7 +238,6 @@ def save_profile(request):
     profile.github = request.data.get("github", "")
     profile.linkedin = request.data.get("linkedin", "")
 
-    # FILE UPLOAD
     if request.FILES.get("resume"):
         profile.resume = request.FILES["resume"]
 
