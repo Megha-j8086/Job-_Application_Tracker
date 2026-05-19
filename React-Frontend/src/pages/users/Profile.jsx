@@ -30,23 +30,28 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  const fetchProfile = async () => {
-    try {
-      const res = await API.get("/users/profile/me/");
-      const data = res.data;
+const fetchProfile = async () => {
+  try {
 
-      if (data.skills) {
-        setSelectedSkills(data.skills.split(","));
-      }
+    const res = await API.get("/users/profile/");
 
-      setProjects(data.projects || "");
-      setBio(data.bio || "");
-      setGithub(data.github || "");
-      setLinkedin(data.linkedin || "");
-    } catch (error) {
-      console.log("Fetch Profile Error:", error);
+    const data = res.data;
+
+    if (data.skills) {
+      setSelectedSkills(data.skills.split(","));
     }
-  };
+
+    setProjects(data.projects || "");
+    setBio(data.bio || "");
+    setGithub(data.github || "");
+    setLinkedin(data.linkedin || "");
+
+  } catch (error) {
+
+    console.log("Fetch Profile Error:", error);
+
+  }
+};
 
   // ================= SKILLS =================
   const handleSkillChange = (skill) => {
@@ -78,7 +83,12 @@ const Profile = () => {
     }
 
     try {
-      await API.post("/users/profile/save/", formData);
+      await API.post("/users/profile/save", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+        
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
