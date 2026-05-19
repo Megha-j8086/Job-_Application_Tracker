@@ -180,22 +180,22 @@ from .serializers import ApplicationSerializer
 
 
 # GET + APPLY JOB (FIXED)
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def applications_list(request):
 
-    # USER ONLY THEIR DATA
+    # GET
     if request.method == "GET":
 
-        if request.user.is_staff or request.user.is_recruiter:
+        if request.user.is_staff:
             apps = Application.objects.all()
         else:
             apps = Application.objects.filter(user=request.user)
 
-        serializer = ApplicationSerializer(apps, many=True)
-        return Response(serializer.data)
+        return Response(ApplicationSerializer(apps, many=True).data)
 
-    # APPLY JOB
+    # POST APPLY JOB
     if request.method == "POST":
 
         serializer = ApplicationSerializer(data=request.data)
@@ -205,7 +205,6 @@ def applications_list(request):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
-
 # =========================
 # DELETE APPLICATION
 # =========================

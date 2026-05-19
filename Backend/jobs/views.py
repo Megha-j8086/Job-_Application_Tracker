@@ -1,47 +1,47 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Job
 from .serializers import JobSerializer
-from recruiter.models import Recruiter
+from users.permissions import IsRecruiter
 
 
-@api_view(["GET", "POST"])   # 🔥 THIS IS MANDATORY
-@permission_classes([IsAuthenticated])
+# GET + POST JOBS
+@api_view(["GET", "POST"])
 def jobs_list(request):
 
-    # GET JOBS
+    # GET (PUBLIC)
     if request.method == "GET":
         jobs = Job.objects.all().order_by("-id")
-        serializer = JobSerializer(jobs, many=True)
-        return Response(serializer.data)
+        return Response(JobSerializer(jobs, many=True).data)
 
-    # POST JOB
+    # POST (RECRUITER ONLY)
     if request.method == "POST":
 
-        try:
-            recruiter = Recruiter.objects.get(user=request.user)
-        except Recruiter.DoesNotExist:
-            return Response(
-                {"error": "Only recruiters can post jobs"},
-                status=403
-            )
+        if not request.user.is_authenticated:
+            return Response({"error": "Login required"}, status=401)
+
+        if request.user.profile.role != "recruiter":
+            return Response({"error": "Recruiter only"}, status=403)
 
         serializer = JobSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save(recruiter=recruiter)
+            serializer.save(recruiter=request.user)
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
 
 
-
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+# UPDATE JOB
+@api_view(["PUT"])
+@permission_classes([IsRecruiter])
 def update_job(request, id):
-    job = Job.objects.get(id=id)
+
+    try:
+        job = Job.objects.get(id=id, recruiter=request.user)
+    except Job.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
 
     serializer = JobSerializer(job, data=request.data, partial=True)
 
@@ -49,12 +49,17 @@ def update_job(request, id):
         serializer.save()
         return Response(serializer.data)
 
-    return Response(serializer.errors)
+    return Response(serializer.errors, status=400)
 
 
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+# DELETE JOB
+@api_view(["DELETE"])
+@permission_classes([IsRecruiter])
 def delete_job(request, id):
-    job = Job.objects.get(id=id)
-    job.delete()
-    return Response({"message": "Deleted"})
+
+    try:
+        job = Job.objects.get(id=id, recruiter=request.user)
+        job.delete()
+        return Response({"message": "Deleted"})
+    except Job.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
