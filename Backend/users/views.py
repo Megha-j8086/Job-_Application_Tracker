@@ -127,7 +127,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Profile
 from .serializers import ProfileSerializer
-
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # =========================
 # REGISTER USER
@@ -215,6 +215,34 @@ def login_user(request):
 def profile(request):
 
     profile, created = Profile.objects.get_or_create(user=request.user)
+
+    serializer = ProfileSerializer(profile)
+
+    return Response(serializer.data)
+
+
+# =========================
+# SAVE PROFILE
+# =========================
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_profile(request):
+
+    profile, created = Profile.objects.get_or_create(
+        user=request.user
+    )
+
+    profile.skills = request.data.get("skills", "")
+    profile.projects = request.data.get("projects", "")
+    profile.bio = request.data.get("bio", "")
+    profile.github = request.data.get("github", "")
+    profile.linkedin = request.data.get("linkedin", "")
+
+    # FILE UPLOAD
+    if request.FILES.get("resume"):
+        profile.resume = request.FILES["resume"]
+
+    profile.save()
 
     serializer = ProfileSerializer(profile)
 
