@@ -1,0 +1,150 @@
+/* =========================
+   PAGE
+========================= */
+
+.recruiter-login-page {
+  min-height: 100vh;
+
+  background: linear-gradient(
+    135deg,
+    #0f172a,
+    #1e293b
+  );
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 20px;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.recruiter-login-card {
+  width: 100%;
+
+  max-width: 420px;
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 20px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+  text-align: center;
+}
+
+/* =========================
+   TITLE
+========================= */
+
+.recruiter-login-card h1 {
+  font-size: 32px;
+
+  color: #0f172a;
+
+  margin-bottom: 10px;
+}
+
+.recruiter-login-card p {
+  color: #64748b;
+
+  margin-bottom: 30px;
+
+  font-size: 15px;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+.recruiter-login-card input {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  margin-bottom: 18px;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 10px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition: 0.3s;
+}
+
+.recruiter-login-card input:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(
+    37,
+    99,
+    235,
+    0.15
+  );
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.recruiter-login-btn {
+  width: 100%;
+
+  padding: 14px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #2563eb;
+
+  color: white;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.recruiter-login-btn:hover {
+  background: #1d4ed8;
+}
+
+/* =========================
+   REGISTER LINK
+========================= */
+
+.recruiter-register-link {
+  margin-top: 20px;
+
+  font-size: 14px;
+
+  color: #475569;
+}
+
+.recruiter-register-link a {
+  margin-left: 5px;
+
+  color: #2563eb;
+
+  text-decoration: none;
+
+  font-weight: 600;
+}
+
+.recruiter-register-link a:hover {
+  text-decoration: underline;
+}

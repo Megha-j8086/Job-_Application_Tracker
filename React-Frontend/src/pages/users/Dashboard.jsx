@@ -229,7 +229,10 @@ const [jobForm, setJobForm] = useState({
 
   } catch (error) {
     console.log(error.response?.data);
-    alert("Failed to add job");
+    alert(
+      error.response?.data?.error ||
+      "Failed To Apply"
+   );
   }
 };
 

@@ -24,6 +24,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import RecruiterLogin from "./pages/recruiter/RecruiterLogin";
 import AddJob from "./pages/recruiter/AddJob";
 import RecruiterManageJobs from "./pages/recruiter/RecruiterManageJobs";
 import Applicants from "./pages/recruiter/Applicants";
@@ -67,7 +68,12 @@ const App = () => {
         <Route path="/manage-jobs" element={<ManageJobs />} />
         <Route path="/admin-analytics" element={<AdminAnalytics />} />
         <Route path="/admin-applications" element={<ManageApplications />}/>
+
         <Route
+          path="/recruiter/login"
+          element={<RecruiterLogin />}
+        />
+           <Route
           path="/recruiter-dashboard"
           element={<RecruiterDashboard />}
         />
