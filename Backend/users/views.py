@@ -200,6 +200,8 @@ def login_user(request):
             status=400
         )
 
+    username = username.strip().lower()
+
     user = authenticate(
         username=username,
         password=password
@@ -213,7 +215,13 @@ def login_user(request):
 
     refresh = RefreshToken.for_user(user)
 
-    profile = Profile.objects.get(user=user)
+    # SAFE PROFILE CREATE
+    profile, created = Profile.objects.get_or_create(
+        user=user,
+        defaults={
+            "role": "admin" if user.is_staff else "user"
+        }
+    )
 
     return Response({
 
