@@ -5,28 +5,25 @@ from jobs.models import Job
 
 class Application(models.Model):
 
-    STATUS_CHOICES = (
+    STATUS_CHOICES = [
         ("Applied", "Applied"),
-        ("Shortlisted", "Shortlisted"),
         ("Interview", "Interview"),
+        ("Offer", "Offer"),
         ("Rejected", "Rejected"),
-        ("Selected", "Selected"),
-    )
+    ]
 
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
-        related_name="applications"
+        on_delete=models.CASCADE
     )
 
     job = models.ForeignKey(
         Job,
-        on_delete=models.CASCADE,
-        related_name="applications"
+        on_delete=models.CASCADE
     )
 
     status = models.CharField(
-        max_length=50,
+        max_length=20,
         choices=STATUS_CHOICES,
         default="Applied"
     )
@@ -35,5 +32,10 @@ class Application(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+
+        unique_together = ['user', 'job']
+
     def __str__(self):
+
         return f"{self.user.username} - {self.job.role}"

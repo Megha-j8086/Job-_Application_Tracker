@@ -151,7 +151,6 @@
 #         serializer.errors,
 #         status=400
 #     )
-
 from rest_framework.decorators import (
     api_view,
     permission_classes
@@ -167,23 +166,30 @@ from .models import Application
 from .serializers import ApplicationSerializer
 
 
-# =========================
-# GET + CREATE APPLICATION
-# =========================
-
-from .models import Application
-from jobs.models import Job
+# =====================================
+# GET APPLICATIONS + APPLY JOB
+# =====================================
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def applications_list(request):
 
-    # ================= GET =================
+    # =========================
+    # GET APPLICATIONS
+    # =========================
     if request.method == "GET":
 
-        applications = Application.objects.filter(
-            user=request.user
-        )
+        # ADMIN CAN SEE ALL
+        if request.user.is_staff:
+
+            applications = Application.objects.all()
+
+        # NORMAL USER ONLY THEIR DATA
+        else:
+
+            applications = Application.objects.filter(
+                user=request.user
+            )
 
         serializer = ApplicationSerializer(
             applications,
@@ -192,95 +198,100 @@ def applications_list(request):
 
         return Response(serializer.data)
 
-    # ================= APPLY JOB =================
+    # =========================
+    # APPLY JOB
+    # =========================
     if request.method == "POST":
 
         job_id = request.data.get("job")
 
-        # CHECK JOB EXISTS
-        try:
-            job = Job.objects.get(id=job_id)
-
-        except Job.DoesNotExist:
-
-            return Response(
-                {"error": "Job not found"},
-                status=404
-            )
-
         # CHECK DUPLICATE APPLICATION
         already_applied = Application.objects.filter(
             user=request.user,
-            job=job
+            job_id=job_id
         ).exists()
 
         if already_applied:
 
             return Response(
-                {"error": "You already applied for this job"},
+                {
+                    "error": "Already applied this job"
+                },
                 status=400
             )
 
-        # CREATE APPLICATION
-        application = Application.objects.create(
-            user=request.user,
-            job=job,
-            status="Applied"
+        serializer = ApplicationSerializer(
+            data=request.data
         )
 
-        serializer = ApplicationSerializer(application)
+        if serializer.is_valid():
 
-        return Response(serializer.data)
+            serializer.save(
+                user=request.user
+            )
+
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
 
 
-# =========================
+# =====================================
 # DELETE APPLICATION
-# =========================
-@api_view(['DELETE'])
+# =====================================
+
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_application(request, id):
 
     try:
 
-        app = Application.objects.get(
+        application = Application.objects.get(
             id=id,
             user=request.user
         )
 
-        app.delete()
+        application.delete()
 
         return Response({
-            "message": "Deleted"
+            "message": "Deleted Successfully"
         })
 
     except Application.DoesNotExist:
 
         return Response(
-            {"error": "Not Found"},
+            {
+                "error": "Application Not Found"
+            },
             status=404
         )
 
 
-# =========================
-# UPDATE STATUS
-# =========================
-@api_view(['PUT'])
+# =====================================
+# UPDATE APPLICATION STATUS
+# =====================================
+
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_application(request, id):
 
     try:
 
-        app = Application.objects.get(id=id)
+        application = Application.objects.get(id=id)
 
     except Application.DoesNotExist:
 
         return Response(
-            {"error": "Not Found"},
+            {
+                "error": "Application Not Found"
+            },
             status=404
         )
 
     serializer = ApplicationSerializer(
-        app,
+        application,
         data=request.data,
         partial=True
     )
@@ -291,4 +302,7 @@ def update_application(request, id):
 
         return Response(serializer.data)
 
-    return Response(serializer.errors)
+    return Response(
+        serializer.errors,
+        status=400
+    )
