@@ -146,30 +146,47 @@ def register_user(request):
             status=400
         )
 
-    email = email.strip()
+    email = email.strip().lower()
 
+    # CHECK EXISTING USER
     if User.objects.filter(username=email).exists():
-        return Response({"error": "User already exists"}, status=400)
+        return Response(
+            {"error": "User already exists"},
+            status=400
+        )
 
     try:
         validate_password(password)
-    except Exception as e:
-        return Response({"error": str(e)}, status=400)
 
-    User.objects.create_user(
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=400
+        )
+
+    # CREATE USER
+    user = User.objects.create_user(
         username=email,
         email=email,
         password=password,
-        first_name=name or ""
+        first_name=name
     )
 
-    return Response({"message": "User created successfully"})
+    # CREATE PROFILE
+    Profile.objects.create(
+        user=user,
+        role="user"
+    )
+
+    return Response({
+        "message": "Registration Success"
+    })
+
 
 
 # =========================
 # LOGIN USER
 # =========================
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
@@ -179,32 +196,42 @@ def login_user(request):
 
     if not username or not password:
         return Response(
-            {"error": "Username and password required"},
+            {"error": "Email and Password required"},
             status=400
         )
 
-    user = authenticate(username=username, password=password)
+    user = authenticate(
+        username=username,
+        password=password
+    )
 
     if user is None:
         return Response(
-            {"error": "Invalid credentials"},
+            {"error": "Invalid Credentials"},
             status=401
         )
 
     refresh = RefreshToken.for_user(user)
 
-    # GET ROLE SAFELY
-    profile, _ = Profile.objects.get_or_create(user=user)
+    profile = Profile.objects.get(user=user)
 
     return Response({
+
         "access": str(refresh.access_token),
+
         "refresh": str(refresh),
+
         "user": {
+
             "id": user.id,
+
             "name": user.first_name,
+
             "email": user.email,
+
+            "role": profile.role,
+
             "is_staff": user.is_staff,
-            "role": profile.role
         }
     })
 # =========================
@@ -251,3 +278,36 @@ def save_profile(request):
     serializer = ProfileSerializer(profile)
 
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register_recruiter(request):
+
+    name = request.data.get("name")
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    if User.objects.filter(username=email).exists():
+
+        return Response(
+            {"error": "User already exists"},
+            status=400
+        )
+
+    user = User.objects.create_user(
+        username=email,
+        email=email,
+        password=password,
+        first_name=name
+    )
+
+    Profile.objects.create(
+        user=user,
+        role="recruiter"
+    )
+
+    return Response({
+        "message": "Recruiter registered"
+    })
+

@@ -171,40 +171,68 @@ from .serializers import ApplicationSerializer
 # GET + CREATE APPLICATION
 # =========================
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
 from .models import Application
-from .serializers import ApplicationSerializer
-
-
-# GET + APPLY JOB (FIXED)
+from jobs.models import Job
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def applications_list(request):
 
-    # GET
+    # ================= GET =================
     if request.method == "GET":
 
-        if request.user.is_staff:
-            apps = Application.objects.all()
-        else:
-            apps = Application.objects.filter(user=request.user)
+        applications = Application.objects.filter(
+            user=request.user
+        )
 
-        return Response(ApplicationSerializer(apps, many=True).data)
+        serializer = ApplicationSerializer(
+            applications,
+            many=True
+        )
 
-    # POST APPLY JOB
+        return Response(serializer.data)
+
+    # ================= APPLY JOB =================
     if request.method == "POST":
 
-        serializer = ApplicationSerializer(data=request.data)
+        job_id = request.data.get("job")
 
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data)
+        # CHECK JOB EXISTS
+        try:
+            job = Job.objects.get(id=job_id)
 
-        return Response(serializer.errors, status=400)
+        except Job.DoesNotExist:
+
+            return Response(
+                {"error": "Job not found"},
+                status=404
+            )
+
+        # CHECK DUPLICATE APPLICATION
+        already_applied = Application.objects.filter(
+            user=request.user,
+            job=job
+        ).exists()
+
+        if already_applied:
+
+            return Response(
+                {"error": "You already applied for this job"},
+                status=400
+            )
+
+        # CREATE APPLICATION
+        application = Application.objects.create(
+            user=request.user,
+            job=job,
+            status="Applied"
+        )
+
+        serializer = ApplicationSerializer(application)
+
+        return Response(serializer.data)
+
+
 # =========================
 # DELETE APPLICATION
 # =========================
