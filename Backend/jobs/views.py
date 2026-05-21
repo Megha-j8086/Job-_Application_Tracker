@@ -64,7 +64,6 @@
 #     except Job.DoesNotExist:
 #         return Response({"error": "Not found"}, status=404)
 
-
 from rest_framework.decorators import (
     api_view,
     permission_classes
@@ -73,8 +72,8 @@ from rest_framework.decorators import (
 from rest_framework.response import Response
 
 from rest_framework.permissions import (
-    IsAuthenticated,
-    AllowAny
+    AllowAny,
+    IsAuthenticated
 )
 
 from .models import Job
@@ -93,7 +92,7 @@ from users.permissions import (
 
 def jobs_list(request):
 
-    # GET ALL JOBS
+    # GET JOBS
     if request.method == "GET":
 
         jobs = Job.objects.all().order_by("-id")
@@ -107,91 +106,47 @@ def jobs_list(request):
             serializer.data
         )
 
-
     # CREATE JOB
-    # if request.method == "POST":
+    elif request.method == "POST":
 
-    #     if not request.user.is_authenticated:
+        if not request.user.is_authenticated:
 
-    #         return Response(
-    #             {
-    #                 "error":
-    #                 "Login required"
-    #             },
-    #             status=401
-    #         )
-
-    #     try:
-
-    #         if (
-    #             request.user.profile.role
-    #             !=
-    #             "recruiter"
-    #         ):
-
-    #             return Response(
-    #                 {
-    #                     "error":
-    #                     "Recruiter only"
-    #                 },
-    #                 status=403
-    #             )
-
-    #     except:
-
-    #         return Response(
-    #             {
-    #                 "error":
-    #                 "Profile missing"
-    #             },
-    #             status=400
-    #         )
-
-    #     serializer = JobSerializer(
-    #         data=request.data
-    #     )
-
-    #     if serializer.is_valid():
-
-    #         serializer.save(
-    #             recruiter=request.user
-    #         )
-
-    #         return Response(
-    #             serializer.data,
-    #             status=201
-    #         )
-
-    #     return Response(
-    #         serializer.errors,
-    #         status=400
-    #     )
-        if request.method=="POST":
-
-            print("USER:",request.user)
-
-            print("AUTH:",request.user.is_authenticated)
-
-            print("PROFILE:",
-                getattr(
-                    request.user,
-                    "profile",
-                    None
-                )
+            return Response(
+                {
+                    "error":
+                    "Login required"
+                },
+                status=401
             )
 
-        print("DATA:",request.data)
+        try:
 
-        serializer=JobSerializer(
+            if (
+                request.user.profile.role
+                !=
+                "recruiter"
+            ):
+
+                return Response(
+                    {
+                        "error":
+                        "Recruiter only"
+                    },
+                    status=403
+                )
+
+        except Exception:
+
+            return Response(
+                {
+                    "error":
+                    "Profile missing"
+                },
+                status=400
+            )
+
+        serializer = JobSerializer(
             data=request.data
-        )
-
-        print(
-            serializer.is_valid()
-        )
-
-        print(
-            serializer.errors
         )
 
         if serializer.is_valid():
@@ -200,10 +155,9 @@ def jobs_list(request):
                 recruiter=request.user
             )
 
-            print("JOB SAVED")
-
             return Response(
-                serializer.data
+                serializer.data,
+                status=201
             )
 
         return Response(
@@ -222,8 +176,8 @@ def jobs_list(request):
 ])
 
 def update_job(
-request,
-id
+    request,
+    id
 ):
 
     try:
@@ -273,8 +227,8 @@ id
 ])
 
 def delete_job(
-request,
-id
+    request,
+    id
 ):
 
     try:
@@ -296,9 +250,9 @@ id
 
     job.delete()
 
-    return Response({
-
-        "message":
-        "Job deleted"
-
-    })
+    return Response(
+        {
+            "message":
+            "Job deleted"
+        }
+    )
