@@ -37,18 +37,6 @@ const Dashboard = () => {
   const [selectedJob, setSelectedJob] =
     useState(null);
 
-const [showAddJob, setShowAddJob] = useState(false);
-
-const [jobForm, setJobForm] = useState({
-  role: "",
-  company: "",
-  location: "",
-  salary: "",
-  skill: "",
-  experience: "",
-  description: "",
-});
-
   // =========================
   // LOAD DATA
   // =========================
@@ -147,23 +135,12 @@ const [jobForm, setJobForm] = useState({
 
       }
     };
-    const handleChange = (e) => {
-  setJobForm({
-    ...jobForm,
-    [e.target.name]: e.target.value,
-  });
-};
 
   // =========================
   // APPLY JOB
   // =========================
   const applyJob =
     async (jobId) => {
-
-      console.log(
-        "JOB ID:",
-        jobId
-      );
 
       try {
 
@@ -181,7 +158,7 @@ const [jobForm, setJobForm] = useState({
           res.data
         );
 
-        // UPDATE UI INSTANTLY
+        // UPDATE UI
         setApplications([
           ...applications,
           res.data
@@ -200,41 +177,12 @@ const [jobForm, setJobForm] = useState({
         );
 
         alert(
+          error.response?.data?.error ||
           "Failed To Apply"
         );
 
       }
     };
-    const addJob = async () => {
-  try {
-    const res = await API.post("/jobs/", jobForm);
-
-    console.log("JOB CREATED:", res.data);
-
-    alert("Job Added Successfully");
-
-    setJobs([res.data, ...jobs]);
-
-    setShowAddJob(false);
-
-    setJobForm({
-      role: "",
-      company: "",
-      location: "",
-      salary: "",
-      skill: "",
-      experience: "",
-      description: "",
-    });
-
-  } catch (error) {
-    console.log(error.response?.data);
-    alert(
-      error.response?.data?.error ||
-      "Failed To Apply"
-   );
-  }
-};
 
   // =========================
   // LOGOUT
@@ -381,12 +329,7 @@ const [jobForm, setJobForm] = useState({
               👋
 
             </h1>
-           <button
-            className="apply-btn"
-            onClick={() => setShowAddJob(true)}
-          >
-            + Add Job
-          </button>
+
             <p>
               Track your jobs and career progress.
             </p>
@@ -608,74 +551,7 @@ const [jobForm, setJobForm] = useState({
         </div>
 
       )}
-     {showAddJob && (
-  <div className="popup-overlay">
 
-    <div className="popup">
-
-      <h2>Add Job</h2>
-
-      <input
-        name="role"
-        placeholder="Role"
-        value={jobForm.role}
-        onChange={handleChange}
-      />
-
-      <input
-        name="company"
-        placeholder="Company"
-        value={jobForm.company}
-        onChange={handleChange}
-      />
-
-      <input
-        name="location"
-        placeholder="Location"
-        value={jobForm.location}
-        onChange={handleChange}
-      />
-
-      <input
-        name="salary"
-        placeholder="Salary"
-        value={jobForm.salary}
-        onChange={handleChange}
-      />
-
-      <input
-        name="skill"
-        placeholder="Skill"
-        value={jobForm.skill}
-        onChange={handleChange}
-      />
-
-      <input
-        name="experience"
-        placeholder="Experience"
-        value={jobForm.experience}
-        onChange={handleChange}
-      />
-
-      <textarea
-        name="description"
-        placeholder="Description"
-        value={jobForm.description}
-        onChange={handleChange}
-      />
-
-      <button onClick={addJob}>
-        Submit
-      </button>
-
-      <button onClick={() => setShowAddJob(false)}>
-        Close
-      </button>
-
-    </div>
-
-  </div>
-)}
     </div>
   );
 };

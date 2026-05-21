@@ -1,115 +1,156 @@
-import React, {
-  useState
-} from "react";
-
-import RecruiterSidebar from "../../components/RecruiterSidebar";
+import React, { useState } from "react";
+import API from "../../api/api";
+import { useNavigate } from "react-router-dom";
 
 const AddJob = () => {
 
-  const [form, setForm] = useState({
+const navigate = useNavigate();
 
-    company: "",
-    role: "",
-    skill: "",
-    experience: "",
-    location: "",
-    salary: "",
-    description: ""
+const [form,setForm]=useState({
 
-  });
+company:"",
+role:"",
+skill:"",
+experience:"",
+location:"",
+salary:"",
+description:""
 
-  const handleChange = (e) => {
+});
 
-    setForm({
+const handleChange=(e)=>{
 
-      ...form,
-      [e.target.name]: e.target.value
+setForm({
 
-    });
-  };
+...form,
+[e.target.name]:
+e.target.value
 
-  const handleSubmit = (e) => {
+});
 
-    e.preventDefault();
+};
 
-    console.log(form);
+const handleSubmit=
+async(e)=>{
 
-    alert("Job Added");
-  };
+e.preventDefault();
 
-  return (
+try{
 
-    <div className="dashboard-container">
+await API.post(
+"/jobs/",
+form
+);
 
-      <RecruiterSidebar />
+alert(
+"Job Added Successfully"
+);
 
-      <div className="page-content">
+navigate(
+"/recruiter-dashboard"
+);
 
-        <h1>Add Job</h1>
+}
 
-        <form
-          className="job-form"
-          onSubmit={handleSubmit}
-        >
+catch(error){
 
-          <input
-            type="text"
-            name="company"
-            placeholder="Company"
-            onChange={handleChange}
-          />
+console.log(
+error.response?.data
+);
 
-          <input
-            type="text"
-            name="role"
-            placeholder="Role"
-            onChange={handleChange}
-          />
+alert(
+"Failed to add job"
+);
 
-          <input
-            type="text"
-            name="skill"
-            placeholder="Skills"
-            onChange={handleChange}
-          />
+}
 
-          <input
-            type="text"
-            name="experience"
-            placeholder="Experience"
-            onChange={handleChange}
-          />
+};
 
-          <input
-            type="text"
-            name="location"
-            placeholder="Location"
-            onChange={handleChange}
-          />
+return(
 
-          <input
-            type="text"
-            name="salary"
-            placeholder="Salary"
-            onChange={handleChange}
-          />
+<div className="page-content">
 
-          <textarea
-            name="description"
-            placeholder="Description"
-            onChange={handleChange}
-          />
+<h1>
+Add Job
+</h1>
 
-          <button type="submit">
-            Add Job
-          </button>
+<form
+className="job-form"
+onSubmit={
+handleSubmit
+}
+>
 
-        </form>
+<input
+name="company"
+placeholder="Company"
+onChange={
+handleChange
+}
+/>
 
-      </div>
+<input
+name="role"
+placeholder="Role"
+onChange={
+handleChange
+}
+/>
 
-    </div>
-  );
+<input
+name="skill"
+placeholder="Skill"
+onChange={
+handleChange
+}
+/>
+
+<input
+name="experience"
+placeholder="Experience"
+onChange={
+handleChange
+}
+/>
+
+<input
+name="location"
+placeholder="Location"
+onChange={
+handleChange
+}
+/>
+
+<input
+name="salary"
+placeholder="Salary"
+onChange={
+handleChange
+}
+/>
+
+<textarea
+name="description"
+placeholder="Description"
+onChange={
+handleChange
+}
+/>
+
+<button
+type="submit"
+>
+
+Add Job
+
+</button>
+
+</form>
+
+</div>
+
+);
+
 };
 
 export default AddJob;

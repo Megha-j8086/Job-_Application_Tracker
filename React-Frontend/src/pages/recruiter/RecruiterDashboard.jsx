@@ -1,297 +1,816 @@
 import React, {
-  useEffect,
-  useState
+useEffect,
+useState
 } from "react";
 
 import API from "../../api/api";
 
+import {
+useNavigate
+} from "react-router-dom";
+
+import "../../styles/RecruiterDashboard.css";
+
 const RecruiterDashboard = () => {
 
-  const [jobs, setJobs] =
-    useState([]);
+const navigate = useNavigate();
 
-  const [applications, setApplications] =
-    useState([]);
+const [user,setUser]=useState({});
+const [jobs,setJobs]=useState([]);
+const [applications,setApplications]=useState([]);
 
-  const [newJob, setNewJob] =
-    useState({
+const [showAddJob,setShowAddJob]=
+useState(false);
 
-      company: "",
-      role: "",
-      skill: "",
-      experience: "",
-      location: "",
-      salary: "",
-      description: "",
 
-    });
+const [selectedApp,setSelectedApp]=
+useState(null);
 
-  useEffect(() => {
+const [jobForm,setJobForm]=
+useState({
+role:"",
+company:"",
+location:"",
+salary:"",
+skill:"",
+experience:"",
+description:"",
+});
 
-    fetchJobs();
 
-    fetchApplications();
 
-  }, []);
+useEffect(()=>{
 
-  // FETCH JOBS
-  const fetchJobs =
-    async () => {
+const token=
+localStorage.getItem("access");
 
-      try {
+const current=
+JSON.parse(
+localStorage.getItem("user")
+);
 
-        const res =
-          await API.get(
-            "/jobs/"
-          );
+if(!token){
 
-        setJobs(res.data);
+navigate(
+"/recruiter/login"
+);
 
-      } catch (error) {
+return;
 
-        console.log(error);
+}
 
-      }
-    };
+if(
+current?.role!=="recruiter"
+){
 
-  // FETCH APPLICATIONS
-  const fetchApplications =
-    async () => {
+navigate("/");
 
-      try {
+return;
 
-        const res =
-          await API.get(
-            "/admin/applications/"
-          );
+}
 
-        setApplications(
-          res.data
-        );
+setUser(current);
 
-      } catch (error) {
+fetchJobs();
 
-        console.log(error);
+fetchApplications();
 
-      }
-    };
+},[]);
 
-  // ADD JOB
-  const handleAddJob =
-    async () => {
 
-      try {
 
-        await API.post(
-          "/jobs/add/",
-          newJob
-        );
+const fetchJobs=
+async()=>{
 
-        alert(
-          "Job Added Successfully"
-        );
+try{
 
-        fetchJobs();
+const res=
+await API.get("/jobs/");
 
-      } catch (error) {
+setJobs(
+res.data
+);
 
-        console.log(error);
+}
 
-      }
-    };
+catch(err){
 
-  // UPDATE STATUS
-  const updateStatus =
-    async (id, status) => {
+console.log(err);
 
-      try {
+}
 
-        await API.put(
-          `/admin/applications/update/${id}/`,
-          {
-            status
-          }
-        );
-
-        fetchApplications();
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
-
-  return (
-
-    <div className="dashboard">
-
-      <h1>
-        Recruiter Dashboard
-      </h1>
-
-      {/* ADD JOB */}
-
-      <div className="popup">
-
-        <h2>
-          Add Job
-        </h2>
-
-        <input
-          placeholder="Company"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              company:
-                e.target.value
-            })
-          }
-        />
-
-        <input
-          placeholder="Role"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              role:
-                e.target.value
-            })
-          }
-        />
-
-        <input
-          placeholder="Skill"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              skill:
-                e.target.value
-            })
-          }
-        />
-
-        <input
-          placeholder="Experience"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              experience:
-                e.target.value
-            })
-          }
-        />
-
-        <input
-          placeholder="Location"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              location:
-                e.target.value
-            })
-          }
-        />
-
-        <input
-          placeholder="Salary"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              salary:
-                e.target.value
-            })
-          }
-        />
-
-        <textarea
-          placeholder="Description"
-          onChange={(e) =>
-            setNewJob({
-              ...newJob,
-              description:
-                e.target.value
-            })
-          }
-        />
-
-        <button
-          onClick={
-            handleAddJob
-          }
-        >
-          Add Job
-        </button>
-
-      </div>
-
-      {/* APPLICATIONS */}
-
-      <h2>
-        Applicants
-      </h2>
-
-      {applications.map(
-        (app) => (
-
-          <div
-            key={app.id}
-            className="job-card"
-          >
-
-            <h3>
-              {app.role}
-            </h3>
-
-            <p>
-              {app.company}
-            </p>
-
-            <p>
-              Status:
-              {app.status}
-            </p>
-
-            <button
-              onClick={() =>
-                updateStatus(
-                  app.id,
-                  "Interview"
-                )
-              }
-            >
-              Interview
-            </button>
-
-            <button
-              onClick={() =>
-                updateStatus(
-                  app.id,
-                  "Rejected"
-                )
-              }
-            >
-              Reject
-            </button>
-
-            <button
-              onClick={() =>
-                updateStatus(
-                  app.id,
-                  "Offer"
-                )
-              }
-            >
-              Select
-            </button>
-
-          </div>
-
-        )
-      )}
-
-    </div>
-  );
+};
+
+
+
+const fetchApplications=
+async()=>{
+
+try{
+
+const res=
+await API.get(
+"/applications/"
+);
+
+setApplications(
+res.data
+);
+
+}
+
+catch(err){
+
+console.log(err);
+
+}
+
+};
+
+
+
+const handleChange=
+(e)=>{
+
+setJobForm({
+
+...jobForm,
+
+[e.target.name]:
+e.target.value
+
+});
+
+};
+
+
+const addJob =
+async()=>{
+
+try{
+
+const payload={
+
+role:
+jobForm.role,
+
+company:
+jobForm.company,
+
+location:
+jobForm.location,
+
+salary:
+jobForm.salary,
+
+skill:
+jobForm.skill,
+
+experience:
+jobForm.experience,
+
+description:
+jobForm.description
+
+};
+
+console.log(
+"SENDING:",
+payload
+);
+
+const res=
+
+await API.post(
+"/jobs/",
+payload
+);
+
+console.log(
+"SAVED:",
+res.data
+);
+
+setJobs(
+[
+res.data,
+...jobs
+]
+);
+
+alert(
+"Job Added Successfully"
+);
+
+setShowAddJob(
+false
+);
+
+setJobForm({
+
+role:"",
+company:"",
+location:"",
+salary:"",
+skill:"",
+experience:"",
+description:""
+
+});
+
+fetchJobs();
+
+}
+
+catch(error){
+
+console.log(
+error.response?.data
+);
+
+alert(
+JSON.stringify(
+error.response?.data
+)
+);
+
+}
+
+};
+
+
+const updateStatus=
+async(
+id,
+status
+)=>{
+
+try{
+
+await API.put(
+`/applications/${id}/`,
+{
+status
+}
+);
+
+fetchApplications();
+
+}
+catch{
+
+alert(
+"Update Failed"
+);
+
+}
+
+};
+
+
+
+const logout=()=>{
+
+localStorage.clear();
+
+navigate("/");
+
+};
+
+
+
+return(
+
+<div className="recruiter-dashboard">
+
+{/* SIDEBAR */}
+
+<aside
+className="recruiter-sidebar"
+>
+
+<div>
+
+<div
+className="sidebar-logo"
+>
+
+<h1>
+SmartTracker
+</h1>
+
+<p>
+Recruiter Panel
+</p>
+
+</div>
+
+<div
+className="profile-box"
+>
+
+<div
+className="avatar"
+>
+
+{
+user?.name?.charAt(0)
+}
+
+</div>
+
+<div>
+
+<h3>
+{user.name}
+</h3>
+
+<p>
+Recruiter
+</p>
+
+</div>
+
+</div>
+
+<nav>
+
+<a href="#dashboard">
+📊 Dashboard
+</a>
+
+<a href="#jobs">
+💼 Jobs
+</a>
+
+<a href="#applications">
+📄 Applications
+</a>
+
+<a href="#">
+📅 Interviews
+</a>
+
+<a href="#">
+👤 Candidates
+</a>
+
+<a href="#">
+⚙ Settings
+</a>
+
+</nav>
+
+</div>
+
+<div>
+
+<button
+className="add-btn"
+onClick={()=>
+navigate("/addjob")
+}
+>
+
+Add Job
+
+</button>
+
+<button
+className="logout-btn"
+onClick={logout}
+>
+
+Logout
+
+</button>
+
+</div>
+
+</aside>
+
+
+
+{/* MAIN */}
+
+<main
+className="recruiter-main"
+>
+
+<div
+className="top"
+>
+
+<h1>
+
+Welcome,
+
+{user.name}
+
+👋
+
+</h1>
+
+<p>
+Manage jobs and candidates
+</p>
+
+</div>
+
+
+
+<div
+className="stats"
+>
+
+<div
+className="card"
+>
+
+<h2>
+{jobs.length}
+</h2>
+
+<p>
+Jobs
+</p>
+
+</div>
+
+<div
+className="card"
+>
+
+<h2>
+{
+applications.length
+}
+</h2>
+
+<p>
+Applications
+</p>
+
+</div>
+
+<div
+className="card"
+>
+
+<h2>
+
+{
+applications.filter(
+a=>
+a.status==="Interview"
+).length
+}
+
+</h2>
+
+<p>
+Interview
+</p>
+
+</div>
+
+<div
+className="card"
+>
+
+<h2>
+
+{
+applications.filter(
+a=>
+a.status==="Offer"
+).length
+}
+
+</h2>
+
+<p>
+Offers
+</p>
+
+</div>
+
+</div>
+
+
+
+<section
+id="jobs"
+>
+
+<h2>
+Jobs
+</h2>
+
+<div
+className="job-grid"
+>
+
+{
+
+jobs.map(
+job=>(
+
+<div
+className="job"
+key={job.id}
+>
+
+<h3>
+{job.role}
+</h3>
+
+<p>
+{job.company}
+</p>
+
+<span>
+{job.location}
+</span>
+
+</div>
+
+)
+)
+
+}
+
+</div>
+
+</section>
+
+
+
+<section
+id="applications"
+>
+
+<h2>
+Applications
+</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>
+User
+</th>
+
+<th>
+Job
+</th>
+
+<th>
+Status
+</th>
+
+<th>
+Action
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{
+
+applications.map(
+app=>(
+
+<tr
+key={app.id}
+>
+
+<td>
+{
+app.user_name
+}
+</td>
+
+<td>
+{
+app.job_title
+}
+</td>
+
+<td>
+{
+app.status
+}
+</td>
+
+<td>
+
+<button
+onClick={()=>
+setSelectedApp(app)
+}
+>
+
+View
+
+</button>
+
+<button
+onClick={()=>
+updateStatus(
+app.id,
+"Interview"
+)
+}
+>
+
+Interview
+
+</button>
+
+<button
+onClick={()=>
+updateStatus(
+app.id,
+"Offer"
+)
+}
+>
+
+Offer
+
+</button>
+
+</td>
+
+</tr>
+
+)
+)
+
+}
+
+</tbody>
+
+</table>
+
+</section>
+
+</main>
+
+
+
+{/* ADD JOB */}
+
+{
+showAddJob&&(
+
+<div
+className="popup"
+>
+
+<div
+className="popup-box"
+>
+
+<h2>
+Add Job
+</h2>
+
+<input
+name="role"
+placeholder="Role"
+value={jobForm.role}
+onChange={handleChange}
+/>
+
+<input
+name="company"
+placeholder="Company"
+value={jobForm.company}
+onChange={handleChange}
+/>
+
+<input
+name="location"
+placeholder="Location"
+value={handleChange.location}
+onChange={handleChange}
+/>
+
+<input
+name="salary"
+placeholder="Salary"
+value={jobForm.salary}
+onChange={handleChange}
+/>
+
+<input
+name="skill"
+placeholder="Skill"
+value={jobForm.skill}
+onChange={handleChange}
+/>
+
+<input
+name="experience"
+placeholder="Experience"
+value={jobForm.experience}
+onChange={handleChange}
+/>
+
+<textarea
+name="description"
+placeholder="Description"
+value={jobForm.description}
+onChange={handleChange}
+/>
+
+<button
+onClick={addJob}
+>
+
+Submit
+
+</button>
+
+<button
+onClick={()=>
+setShowAddJob(false)
+}
+>
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+)
+}
+
+
+
+{/* PROFILE */}
+
+{
+selectedApp&&(
+
+<div
+className="popup"
+>
+
+<div
+className="popup-box"
+>
+
+<h2>
+Candidate
+</h2>
+
+<p>
+{
+selectedApp.user_name
+}
+</p>
+
+<p>
+{
+selectedApp.status
+}
+</p>
+
+<button
+onClick={()=>
+setSelectedApp(
+null
+)
+}
+>
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+)
+}
+
+</div>
+
+);
+
 };
 
 export default RecruiterDashboard;

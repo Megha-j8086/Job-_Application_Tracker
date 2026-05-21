@@ -203,7 +203,7 @@ const Register = () => {
 
         <p className="switch-link">
           Already have an account?{" "}
-          <Link to="/login">Login</Link>
+          <Link to="/log">Login</Link>
         </p>
       </form>
     </div>

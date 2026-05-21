@@ -1,6 +1,5 @@
 import React from "react";
 
-import RecruiterSidebar from "../../components/RecruiterSidebar";
 
 const Interviews = () => {
 
