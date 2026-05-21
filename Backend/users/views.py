@@ -132,56 +132,94 @@ from rest_framework.parsers import MultiPartParser, FormParser
 # =========================
 # REGISTER USER
 # =========================
-@api_view(['POST'])
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
+
 def register_user(request):
 
-    name = request.data.get("name")
-    email = request.data.get("email")
-    password = request.data.get("password")
-
-    if not email or not password:
-        return Response(
-            {"error": "Email and password required"},
-            status=400
-        )
-
-    email = email.strip().lower()
-
-    # CHECK EXISTING USER
-    if User.objects.filter(username=email).exists():
-        return Response(
-            {"error": "User already exists"},
-            status=400
-        )
-
     try:
-        validate_password(password)
+
+        name = request.data.get("name")
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not email or not password:
+
+            return Response(
+                {
+                    "error":
+                    "Email and password required"
+                },
+                status=400
+            )
+
+        email = email.strip().lower()
+
+        # EXIST CHECK
+        if User.objects.filter(
+            username=email
+        ).exists():
+
+            return Response(
+                {
+                    "error":
+                    "User already exists"
+                },
+                status=400
+            )
+
+        validate_password(
+            password
+        )
+
+        # CREATE USER
+        user = User.objects.create_user(
+
+            username=email,
+
+            email=email,
+
+            password=password,
+
+            first_name=name
+
+        )
+
+        # CREATE PROFILE
+        Profile.objects.create(
+
+            user=user,
+
+            role="user"
+
+        )
+
+        return Response(
+
+            {
+                "message":
+                "Registration Success"
+            },
+
+            status=201
+
+        )
 
     except Exception as e:
+
+        print(e)
+
         return Response(
-            {"error": str(e)},
+
+            {
+                "error":
+                str(e)
+            },
+
             status=400
+
         )
-
-    # CREATE USER
-    user = User.objects.create_user(
-        username=email,
-        email=email,
-        password=password,
-        first_name=name
-    )
-
-    # CREATE PROFILE
-    Profile.objects.create(
-        user=user,
-        role="user"
-    )
-
-    return Response({
-        "message": "Registration Success"
-    })
-
 
 
 # =========================
