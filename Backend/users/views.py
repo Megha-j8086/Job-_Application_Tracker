@@ -134,26 +134,39 @@ from rest_framework.parsers import MultiPartParser, FormParser
 # =========================
 @api_view(["POST"])
 @permission_classes([AllowAny])
-
 def register_user(request):
 
-    name = request.data.get("name", "").strip()
-    email = request.data.get("email", "").strip().lower()
-    password = request.data.get("password")
-
-    if not email or not password:
-        return Response(
-            {"error": "Email and password required"},
-            status=400
-        )
-
-    if User.objects.filter(username=email).exists():
-        return Response(
-            {"error": "User already exists"},
-            status=400
-        )
-
     try:
+
+        name = request.data.get("name")
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not email or not password:
+
+            return Response(
+                {
+                    "error":
+                    "Email and Password required"
+                },
+                status=400
+            )
+
+        email = email.strip().lower()
+
+        # EXIST CHECK
+        if User.objects.filter(
+            username=email
+        ).exists():
+
+            return Response(
+                {
+                    "error":
+                    "User already exists"
+                },
+                status=400
+            )
+
         validate_password(password)
 
         user = User.objects.create_user(
@@ -163,9 +176,12 @@ def register_user(request):
             first_name=name
         )
 
-        Profile.objects.create(
+        # SAFE PROFILE CREATE
+        Profile.objects.get_or_create(
             user=user,
-            role="user"
+            defaults={
+                "role": "user"
+            }
         )
 
         return Response(
@@ -180,11 +196,11 @@ def register_user(request):
 
         return Response(
             {
-                "error": str(e)
+                "error":
+                str(e)
             },
             status=400
         )
-
 
 # =========================
 # LOGIN USER
