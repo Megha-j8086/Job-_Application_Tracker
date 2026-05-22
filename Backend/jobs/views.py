@@ -87,17 +87,25 @@ from users.permissions import (
 # =========================
 # GET + CREATE JOB
 # =========================
-@api_view(["GET", "POST"])
-@permission_classes([AllowAny])
+from rest_framework.decorators import api_view
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from .models import Job
+from .serializers import JobSerializer
+
+
+@api_view(["GET","POST"])
 
 def jobs_list(request):
 
-    # GET JOBS
-    if request.method == "GET":
+    if request.method=="GET":
 
-        jobs = Job.objects.all().order_by("-id")
+        jobs=Job.objects.all().order_by(
+            "-id"
+        )
 
-        serializer = JobSerializer(
+        serializer=JobSerializer(
             jobs,
             many=True
         )
@@ -106,53 +114,28 @@ def jobs_list(request):
             serializer.data
         )
 
-    # CREATE JOB
-    elif request.method == "POST":
+
+    if request.method=="POST":
 
         if not request.user.is_authenticated:
 
             return Response(
                 {
                     "error":
-                    "Login required"
+                    "Login Required"
                 },
                 status=401
             )
 
-        try:
-
-            if (
-                request.user.profile.role
-                !=
-                "recruiter"
-            ):
-
-                return Response(
-                    {
-                        "error":
-                        "Recruiter only"
-                    },
-                    status=403
-                )
-
-        except Exception:
-
-            return Response(
-                {
-                    "error":
-                    "Profile missing"
-                },
-                status=400
-            )
-
-        serializer = JobSerializer(
+        serializer=JobSerializer(
             data=request.data
         )
 
         if serializer.is_valid():
 
             serializer.save(
-                recruiter=request.user
+                recruiter=
+                request.user
             )
 
             return Response(
@@ -164,8 +147,6 @@ def jobs_list(request):
             serializer.errors,
             status=400
         )
-
-
 # =========================
 # UPDATE JOB
 # =========================
