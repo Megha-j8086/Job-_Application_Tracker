@@ -152,6 +152,7 @@
 #         status=400
 #  
 
+
 from rest_framework.decorators import (
     api_view,
     permission_classes
@@ -168,7 +169,7 @@ from .serializers import ApplicationSerializer
 
 
 # ====================================
-# GET APPLICATIONS + APPLY
+# GET + APPLY
 # ====================================
 
 @api_view(["GET", "POST"])
@@ -176,16 +177,26 @@ from .serializers import ApplicationSerializer
 
 def applications_list(request):
 
-    # =========================
-    # GET
-    # =========================
+    # ======================
+    # GET APPLICATIONS
+    # ======================
     if request.method == "GET":
+
+        role = "user"
 
         try:
 
-            role = (
-                request.user.profile.role
-            )
+            if hasattr(
+                request.user,
+                "profile"
+            ):
+
+                role = (
+                    request
+                    .user
+                    .profile
+                    .role
+                )
 
         except:
 
@@ -208,7 +219,9 @@ def applications_list(request):
                     request.user
                 )
 
-                .order_by("-created_at")
+                .order_by(
+                    "-id"
+                )
 
             )
 
@@ -226,11 +239,13 @@ def applications_list(request):
 
                 .all()
 
-                .order_by("-created_at")
+                .order_by(
+                    "-id"
+                )
 
             )
 
-        # USER
+        # NORMAL USER
         else:
 
             applications = (
@@ -246,7 +261,9 @@ def applications_list(request):
                     user=request.user
                 )
 
-                .order_by("-created_at")
+                .order_by(
+                    "-id"
+                )
 
             )
 
@@ -259,8 +276,10 @@ def applications_list(request):
                 many=True,
 
                 context={
+
                     "request":
                     request
+
                 }
 
             )
@@ -271,79 +290,91 @@ def applications_list(request):
             serializer.data
         )
 
-    # =========================
-    # APPLY
-    # =========================
-    job_id = request.data.get(
-        "job"
-    )
+    # ======================
+    # APPLY JOB
+    # ======================
+    if request.method == "POST":
 
-    exists = (
+        job_id = request.data.get(
+            "job"
+        )
 
-        Application.objects
+        if not job_id:
 
-        .filter(
+            return Response(
 
-            user=request.user,
+                {
+                    "error":
+                    "Job required"
+                },
 
-            job_id=job_id
+                status=400
+
+            )
+
+        exists = (
+
+            Application.objects
+
+            .filter(
+
+                user=request.user,
+
+                job_id=job_id
+
+            )
+
+            .exists()
 
         )
 
-        .exists()
+        if exists:
 
-    )
+            return Response(
 
-    if exists:
+                {
+                    "error":
+                    "Already applied"
+                },
+
+                status=400
+
+            )
+
+        serializer = (
+
+            ApplicationSerializer(
+
+                data=request.data,
+
+                context={
+                    "request":
+                    request
+                }
+
+            )
+
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+
+                serializer.data,
+
+                status=201
+
+            )
 
         return Response(
 
-            {
-
-                "error":
-
-                "Already applied"
-
-            },
+            serializer.errors,
 
             status=400
 
         )
-
-    serializer = (
-
-        ApplicationSerializer(
-
-            data=request.data,
-
-            context={
-                "request":
-                request
-            }
-
-        )
-
-    )
-
-    if serializer.is_valid():
-
-        serializer.save()
-
-        return Response(
-
-            serializer.data,
-
-            status=201
-
-        )
-
-    return Response(
-
-        serializer.errors,
-
-        status=400
-
-    )
 
 
 # ====================================
@@ -362,7 +393,9 @@ def delete_application(
 
         application = (
 
-            Application.objects.get(
+            Application.objects
+
+            .get(
 
                 id=id,
 
@@ -390,7 +423,7 @@ def delete_application(
 
                 "error":
 
-                "Not found"
+                "Not Found"
 
             },
 
@@ -435,7 +468,7 @@ def update_application(
 
                 "error":
 
-                "Application Not Found"
+                "Application not found"
 
             },
 
@@ -478,8 +511,10 @@ def update_application(
             partial=True,
 
             context={
+
                 "request":
                 request
+
             }
 
         )
