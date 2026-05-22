@@ -150,7 +150,8 @@
 #     return Response(
 #         serializer.errors,
 #         status=400
-#     )
+#  
+
 from rest_framework.decorators import (
     api_view,
     permission_classes
@@ -166,143 +167,337 @@ from .models import Application
 from .serializers import ApplicationSerializer
 
 
-# =====================================
-# GET APPLICATIONS + APPLY JOB
-# =====================================
+# ====================================
+# GET APPLICATIONS + APPLY
+# ====================================
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
+
 def applications_list(request):
 
     # =========================
-    # GET APPLICATIONS
+    # GET
     # =========================
     if request.method == "GET":
 
-        # ADMIN CAN SEE ALL
-        if request.user.is_staff:
+        try:
 
-            applications = Application.objects.all()
+            role = (
+                request.user.profile.role
+            )
 
-        # NORMAL USER ONLY THEIR DATA
+        except:
+
+            role = "user"
+
+        # RECRUITER
+        if role == "recruiter":
+
+            applications = (
+
+                Application.objects
+
+                .select_related(
+                    "user",
+                    "job"
+                )
+
+                .filter(
+                    job__recruiter=
+                    request.user
+                )
+
+                .order_by("-created_at")
+
+            )
+
+        # ADMIN
+        elif request.user.is_staff:
+
+            applications = (
+
+                Application.objects
+
+                .select_related(
+                    "user",
+                    "job"
+                )
+
+                .all()
+
+                .order_by("-created_at")
+
+            )
+
+        # USER
         else:
 
-            applications = Application.objects.filter(
-                user=request.user
+            applications = (
+
+                Application.objects
+
+                .select_related(
+                    "user",
+                    "job"
+                )
+
+                .filter(
+                    user=request.user
+                )
+
+                .order_by("-created_at")
+
             )
 
-        serializer = ApplicationSerializer(
-            applications,
-            many=True
+        serializer = (
+
+            ApplicationSerializer(
+
+                applications,
+
+                many=True,
+
+                context={
+                    "request":
+                    request
+                }
+
+            )
+
         )
 
-        return Response(serializer.data)
+        return Response(
+            serializer.data
+        )
 
     # =========================
-    # APPLY JOB
+    # APPLY
     # =========================
-    if request.method == "POST":
+    job_id = request.data.get(
+        "job"
+    )
 
-        job_id = request.data.get("job")
+    exists = (
 
-        # CHECK DUPLICATE APPLICATION
-        already_applied = Application.objects.filter(
+        Application.objects
+
+        .filter(
+
             user=request.user,
+
             job_id=job_id
-        ).exists()
 
-        if already_applied:
-
-            return Response(
-                {
-                    "error": "Already applied this job"
-                },
-                status=400
-            )
-
-        serializer = ApplicationSerializer(
-            data=request.data
         )
 
-        if serializer.is_valid():
+        .exists()
 
-            serializer.save(
-                user=request.user
-            )
+    )
 
-            return Response(serializer.data)
+    if exists:
 
         return Response(
-            serializer.errors,
+
+            {
+
+                "error":
+
+                "Already applied"
+
+            },
+
             status=400
+
         )
 
+    serializer = (
 
-# =====================================
-# DELETE APPLICATION
-# =====================================
+        ApplicationSerializer(
 
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def delete_application(request, id):
+            data=request.data,
 
-    try:
+            context={
+                "request":
+                request
+            }
 
-        application = Application.objects.get(
-            id=id,
-            user=request.user
         )
 
-        application.delete()
-
-        return Response({
-            "message": "Deleted Successfully"
-        })
-
-    except Application.DoesNotExist:
-
-        return Response(
-            {
-                "error": "Application Not Found"
-            },
-            status=404
-        )
-
-
-# =====================================
-# UPDATE APPLICATION STATUS
-# =====================================
-
-@api_view(["PUT"])
-@permission_classes([IsAuthenticated])
-def update_application(request, id):
-
-    try:
-
-        application = Application.objects.get(id=id)
-
-    except Application.DoesNotExist:
-
-        return Response(
-            {
-                "error": "Application Not Found"
-            },
-            status=404
-        )
-
-    serializer = ApplicationSerializer(
-        application,
-        data=request.data,
-        partial=True
     )
 
     if serializer.is_valid():
 
         serializer.save()
 
-        return Response(serializer.data)
+        return Response(
+
+            serializer.data,
+
+            status=201
+
+        )
 
     return Response(
+
         serializer.errors,
+
         status=400
+
+    )
+
+
+# ====================================
+# DELETE
+# ====================================
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+
+def delete_application(
+    request,
+    id
+):
+
+    try:
+
+        application = (
+
+            Application.objects.get(
+
+                id=id,
+
+                user=request.user
+
+            )
+
+        )
+
+        application.delete()
+
+        return Response({
+
+            "message":
+
+            "Deleted"
+
+        })
+
+    except Application.DoesNotExist:
+
+        return Response(
+
+            {
+
+                "error":
+
+                "Not found"
+
+            },
+
+            status=404
+
+        )
+
+
+# ====================================
+# UPDATE STATUS
+# ====================================
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+
+def update_application(
+    request,
+    id
+):
+
+    try:
+
+        application = (
+
+            Application.objects
+
+            .select_related(
+                "job"
+            )
+
+            .get(
+                id=id
+            )
+
+        )
+
+    except Application.DoesNotExist:
+
+        return Response(
+
+            {
+
+                "error":
+
+                "Application Not Found"
+
+            },
+
+            status=404
+
+        )
+
+    if (
+
+        request.user
+
+        !=
+
+        application.job.recruiter
+
+    ):
+
+        return Response(
+
+            {
+
+                "error":
+
+                "Permission denied"
+
+            },
+
+            status=403
+
+        )
+
+    serializer = (
+
+        ApplicationSerializer(
+
+            application,
+
+            data=request.data,
+
+            partial=True,
+
+            context={
+                "request":
+                request
+            }
+
+        )
+
+    )
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response(
+            serializer.data
+        )
+
+    return Response(
+
+        serializer.errors,
+
+        status=400
+
     )

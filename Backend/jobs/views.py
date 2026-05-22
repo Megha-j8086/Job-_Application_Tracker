@@ -102,7 +102,7 @@ def jobs_list(request):
     if request.method=="GET":
 
         jobs=Job.objects.all().order_by(
-            "-id"
+            "-created_at"
         )
 
         serializer=JobSerializer(
