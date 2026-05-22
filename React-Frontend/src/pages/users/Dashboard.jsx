@@ -40,70 +40,60 @@ const Dashboard = () => {
   // =========================
   // LOAD DATA
   // =========================
-  useEffect(() => {
+useEffect(() => {
 
-    const token =
-      localStorage.getItem(
-        "access"
-      );
+const token =
+localStorage.getItem("access");
 
-    // CHECK LOGIN
-    if (!token) {
+if(!token){
 
-      navigate("/log");
-      return;
+navigate("/log");
 
-    }
+return;
 
-    // GET USER
-    const loggedUser =
-      JSON.parse(
-        localStorage.getItem(
-          "user"
-        )
-      );
+}
 
-    if (loggedUser) {
+const saved =
+localStorage.getItem("user");
 
-      setUser(loggedUser);
+if(saved){
 
-    }
+setUser(
+JSON.parse(saved)
+);
 
-    // FETCH DATA
-    fetchJobs();
+}
 
-    fetchApplications();
+fetchJobs();
+fetchApplications();
 
-  }, []);
-
+}, [navigate]);
   // =========================
   // FETCH JOBS
   // =========================
-  const fetchJobs =
-    async () => {
+const fetchJobs = async () => {
+  try {
 
-      try {
+    const res = await API.get("/jobs/");
 
-        const res =
-          await API.get(
-            "/jobs/"
-          );
+    console.log("ALL JOBS:", res.data);
 
-        console.log(
-          "JOBS:",
-          res.data
-        );
+    if (Array.isArray(res.data)) {
+      setJobs(res.data);
+    } else {
+      setJobs([]);
+    }
 
-        setJobs(res.data);
+  } catch (err) {
 
-      }
+    console.log(
+      "JOB FETCH ERROR",
+      err.response?.data
+    );
 
-      catch (error) {
-
-        console.log(error);
-
-      }
-    };
+    setJobs([]);
+  }
+};
 
   // =========================
   // FETCH APPLICATIONS
@@ -139,88 +129,87 @@ const Dashboard = () => {
   // =========================
   // APPLY JOB
   // =========================
-  const applyJob =
-    async (jobId) => {
+ const applyJob =
+async (jobId) => {
 
-      try {
+try {
 
-        const res =
-          await API.post(
-            "/applications/",
-            {
-              job: jobId,
-              status: "Applied"
-            }
-          );
+const res =
+await API.post(
+"/applications/",
+{
+job: jobId,
+status:
+"Applied"
+}
+);
 
-        console.log(
-          "APPLICATION CREATED:",
-          res.data
-        );
+setApplications(
 
-        // UPDATE UI
-        setApplications([
-          ...applications,
-          res.data
-        ]);
+(prev)=>
+[
+...prev,
+res.data
+]
 
-        alert(
-          "Application Submitted"
-        );
+);
 
-      }
+alert(
+"Application Submitted"
+);
 
-      catch (error) {
+}
 
-        console.log(
-          error.response?.data
-        );
+catch (error) {
 
-        alert(
-          error.response?.data?.error ||
-          "Failed To Apply"
-        );
+alert(
 
-      }
-    };
+error.response
+?.data
+?.error
+
+||
+
+"Failed To Apply"
+
+);
+
+}
+
+};
 
   // =========================
   // LOGOUT
   // =========================
-  const handleLogout =
-    () => {
 
-      localStorage.removeItem(
-        "access"
-      );
+const handleLogout =
+() => {
 
-      localStorage.removeItem(
-        "refresh"
-      );
+localStorage.clear();
 
-      localStorage.removeItem(
-        "user"
-      );
+setUser({});
 
-      alert(
-        "Logged Out Successfully"
-      );
+setJobs([]);
 
-      navigate("/");
+setApplications([]);
 
-    };
+navigate("/");
 
+};
   // =========================
   // SEARCH FILTER
   // =========================
-  const filteredJobs =
-    jobs.filter((job) =>
-      job.role
-        ?.toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
-    );
+const filteredJobs =
+Array.isArray(jobs)
+? jobs.filter(
+(job)=>
+job.role
+?.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+)
+:[];
 
   // =========================
   // COUNTS

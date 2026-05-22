@@ -148,29 +148,42 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit=async(e)=>{
 
-    try {
-      await API.post("/users/register/", {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-      });
+e.preventDefault();
 
-      alert("Registration Success");
+try{
 
-      navigate("/log"); // FIXED ROUTE
-    } catch (error) {
-      console.log(error.response?.data);
+await API.post(
+"/users/register/",
+form
+);
 
-      alert(
-        error.response?.data?.error ||
-          "Registration Failed"
-      );
-    }
-  };
+alert(
+"Registration Success"
+);
 
+navigate(
+"/log"
+);
+
+}
+
+catch(error){
+
+alert(
+
+error.response?.data?.error
+
+||
+
+"Registration Failed"
+
+);
+
+}
+
+};
   return (
     <div className="auth-container">
       <form className="auth-form" onSubmit={handleSubmit}>

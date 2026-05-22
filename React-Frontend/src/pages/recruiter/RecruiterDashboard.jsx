@@ -144,100 +144,69 @@ e.target.value
 };
 
 
-const addJob =
+
+// const addJob=
+// async()=>{
+
+// try{
+
+// const res=
+// await API.post(
+// "/jobs/",
+// jobForm
+// );
+
+// setJobs([
+// res.data,
+// ...jobs
+// ]);
+
+// alert(
+// "Job Added"
+// );
+
+// setShowAddJob(false);
+
+// }
+// catch{
+
+// alert(
+// "Failed"
+// );
+
+// }
+
+// };
+const addJob=
 async()=>{
 
 try{
 
-const payload={
-
-role:
-jobForm.role,
-
-company:
-jobForm.company,
-
-location:
-jobForm.location,
-
-salary:
-jobForm.salary,
-
-skill:
-jobForm.skill,
-
-experience:
-jobForm.experience,
-
-description:
-jobForm.description
-
-};
-
-console.log(
-"SENDING:",
-payload
-);
-
-const res=
-
 await API.post(
 "/jobs/",
-payload
+jobForm
 );
 
-console.log(
-"SAVED:",
-res.data
-);
-
-setJobs(
-[
-res.data,
-...jobs
-]
-);
+await fetchJobs();
 
 alert(
-"Job Added Successfully"
+"Job Added"
 );
 
 setShowAddJob(
 false
 );
 
-setJobForm({
-
-role:"",
-company:"",
-location:"",
-salary:"",
-skill:"",
-experience:"",
-description:""
-
-});
-
-fetchJobs();
-
 }
-
-catch(error){
-
-console.log(
-error.response?.data
-);
+catch{
 
 alert(
-JSON.stringify(
-error.response?.data
-)
+"Failed"
 );
 
 }
 
 };
-
 
 const updateStatus=
 async(
@@ -296,7 +265,7 @@ className="sidebar-logo"
 >
 
 <h1>
-SmartTracker
+SmartHire
 </h1>
 
 <p>
@@ -343,7 +312,7 @@ Recruiter
 💼 Jobs
 </a>
 
-<a href="#applications">
+<a href="/applicants">
 📄 Applications
 </a>
 
@@ -368,11 +337,11 @@ Recruiter
 <button
 className="add-btn"
 onClick={()=>
-navigate("/addjob")
+setShowAddJob(true)
 }
 >
 
-Add Job
++ Add Job
 
 </button>
 
@@ -683,54 +652,29 @@ className="popup-box"
 Add Job
 </h2>
 
-<input
-name="role"
-placeholder="Role"
-value={jobForm.role}
-onChange={handleChange}
-/>
+{
+
+Object.keys(
+jobForm
+).map(
+field=>(
 
 <input
-name="company"
-placeholder="Company"
-value={jobForm.company}
-onChange={handleChange}
+key={field}
+name={field}
+placeholder={field}
+value={
+jobForm[field]
+}
+onChange={
+handleChange
+}
 />
 
-<input
-name="location"
-placeholder="Location"
-value={handleChange.location}
-onChange={handleChange}
-/>
+)
+)
 
-<input
-name="salary"
-placeholder="Salary"
-value={jobForm.salary}
-onChange={handleChange}
-/>
-
-<input
-name="skill"
-placeholder="Skill"
-value={jobForm.skill}
-onChange={handleChange}
-/>
-
-<input
-name="experience"
-placeholder="Experience"
-value={jobForm.experience}
-onChange={handleChange}
-/>
-
-<textarea
-name="description"
-placeholder="Description"
-value={jobForm.description}
-onChange={handleChange}
-/>
+}
 
 <button
 onClick={addJob}
