@@ -115,225 +115,498 @@
 
 #     return Response(serializer.data)
 
+
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    parser_classes
+)
+
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated
+)
+
 from rest_framework.response import Response
 
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.parsers import (
+    MultiPartParser,
+    FormParser
+)
+
+from rest_framework_simplejwt.tokens import (
+    RefreshToken
+)
 
 from .models import Profile
 from .serializers import ProfileSerializer
-from rest_framework.parsers import MultiPartParser, FormParser
+
 
 # =========================
 # REGISTER USER
 # =========================
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
+
 def register_user(request):
 
     try:
 
-        name = request.data.get("name")
-        email = request.data.get("email")
-        password = request.data.get("password")
+        name = request.data.get(
+            "name",
+            ""
+        )
+
+        email = (
+            request.data
+            .get(
+                "email",
+                ""
+            )
+            .strip()
+            .lower()
+        )
+
+        password = request.data.get(
+            "password"
+        )
 
         if not email or not password:
 
             return Response(
+
                 {
                     "error":
                     "Email and Password required"
                 },
+
                 status=400
+
             )
 
-        email = email.strip().lower()
-
-        # EXIST CHECK
         if User.objects.filter(
             username=email
         ).exists():
 
             return Response(
+
                 {
                     "error":
                     "User already exists"
                 },
+
                 status=400
+
             )
 
-        validate_password(password)
-
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=password,
-            first_name=name
+        validate_password(
+            password
         )
 
-        # SAFE PROFILE CREATE
+        user = User.objects.create_user(
+
+            username=email,
+
+            email=email,
+
+            password=password,
+
+            first_name=name
+
+        )
+
         Profile.objects.get_or_create(
+
             user=user,
+
             defaults={
-                "role": "user"
+
+                "role":
+                "user"
+
             }
+
         )
 
         return Response(
+
             {
                 "message":
                 "Registration Success"
             },
+
             status=201
+
         )
 
     except Exception as e:
 
         return Response(
+
             {
                 "error":
                 str(e)
             },
+
             status=400
+
         )
 
+
 # =========================
-# LOGIN USER
+# LOGIN
 # =========================
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
+
 def login_user(request):
 
-    username = request.data.get("username")
-    password = request.data.get("password")
-
-    if not username or not password:
-        return Response(
-            {"error": "Email and Password required"},
-            status=400
+    username = (
+        request.data
+        .get(
+            "username",
+            ""
         )
-
-    username = username.strip().lower()
-
-    user = authenticate(
-        username=username,
-        password=password
+        .strip()
+        .lower()
     )
 
-    if user is None:
+    password = request.data.get(
+        "password"
+    )
+
+    user = authenticate(
+
+        username=username,
+
+        password=password
+
+    )
+
+    if not user:
+
         return Response(
-            {"error": "Invalid Credentials"},
+
+            {
+                "error":
+                "Invalid Credentials"
+            },
+
             status=401
+
         )
 
-    refresh = RefreshToken.for_user(user)
+    profile, created = (
 
-    # SAFE PROFILE CREATE
-    profile, created = Profile.objects.get_or_create(
-        user=user,
-        defaults={
-            "role": "admin" if user.is_staff else "user"
-        }
+        Profile.objects
+
+        .get_or_create(
+
+            user=user,
+
+            defaults={
+
+                "role":
+
+                "admin"
+
+                if
+
+                user.is_staff
+
+                else
+
+                "user"
+
+            }
+
+        )
+
+    )
+
+    refresh = (
+        RefreshToken
+        .for_user(
+            user
+        )
     )
 
     return Response({
 
-        "access": str(refresh.access_token),
+        "access":
+        str(
+            refresh.access_token
+        ),
 
-        "refresh": str(refresh),
+        "refresh":
+        str(
+            refresh
+        ),
 
         "user": {
 
-            "id": user.id,
+            "id":
+            user.id,
 
-            "name": user.first_name,
+            "name":
+            user.first_name,
 
-            "email": user.email,
+            "email":
+            user.email,
 
-            "role": profile.role,
+            "role":
+            profile.role,
 
-            "is_staff": user.is_staff,
+            "is_staff":
+            user.is_staff
+
         }
+
     })
+
+
 # =========================
-# PROFILE
+# GET PROFILE
 # =========================
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+
 def profile(request):
 
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    try:
 
-    serializer = ProfileSerializer(profile)
+        profile, created = (
 
-    return Response(serializer.data)
+            Profile.objects
+
+            .get_or_create(
+
+                user=request.user
+
+            )
+
+        )
+
+        serializer = (
+            ProfileSerializer(
+                profile
+            )
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    except Exception as e:
+
+        return Response(
+
+            {
+                "error":
+                str(e)
+            },
+
+            status=500
+
+        )
 
 
 # =========================
 # SAVE PROFILE
-
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
-
+# =========================
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser])
+@parser_classes([
+    MultiPartParser,
+    FormParser
+])
+
 def save_profile(request):
 
-    profile, created = Profile.objects.get_or_create(
-        user=request.user
-    )
+    try:
 
-    profile.skills = request.data.get("skills", "")
-    profile.projects = request.data.get("projects", "")
-    profile.bio = request.data.get("bio", "")
-    profile.github = request.data.get("github", "")
-    profile.linkedin = request.data.get("linkedin", "")
+        profile, created = (
 
-    if request.FILES.get("resume"):
-        profile.resume = request.FILES["resume"]
+            Profile.objects
 
-    profile.save()
+            .get_or_create(
 
-    serializer = ProfileSerializer(profile)
+                user=request.user
 
-    return Response(serializer.data)
+            )
 
+        )
+
+        profile.skills = (
+            request.data.get(
+                "skills",
+                ""
+            )
+        )
+
+        profile.projects = (
+            request.data.get(
+                "projects",
+                ""
+            )
+        )
+
+        profile.bio = (
+            request.data.get(
+                "bio",
+                ""
+            )
+        )
+
+        profile.github = (
+            request.data.get(
+                "github",
+                ""
+            )
+        )
+
+        profile.linkedin = (
+            request.data.get(
+                "linkedin",
+                ""
+            )
+        )
+
+        if request.FILES.get(
+            "resume"
+        ):
+
+            profile.resume = (
+
+                request.FILES[
+                    "resume"
+                ]
+
+            )
+
+        profile.save()
+
+        serializer = (
+
+            ProfileSerializer(
+                profile
+            )
+
+        )
+
+        return Response(
+
+            serializer.data
+
+        )
+
+    except Exception as e:
+
+        print(
+            "SAVE PROFILE ERROR:",
+            str(e)
+        )
+
+        return Response(
+
+            {
+                "error":
+                str(e)
+            },
+
+            status=500
+
+        )
+
+
+# =========================
+# REGISTER RECRUITER
+# =========================
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+
 def register_recruiter(request):
 
-    name = request.data.get("name")
-    email = request.data.get("email")
-    password = request.data.get("password")
+    try:
 
-    if User.objects.filter(username=email).exists():
-
-        return Response(
-            {"error": "User already exists"},
-            status=400
+        name = request.data.get(
+            "name"
         )
 
-    user = User.objects.create_user(
-        username=email,
-        email=email,
-        password=password,
-        first_name=name
-    )
+        email = (
+            request.data
+            .get(
+                "email"
+            )
+            .lower()
+        )
 
-    Profile.objects.create(
-        user=user,
-        role="recruiter"
-    )
+        password = request.data.get(
+            "password"
+        )
 
-    return Response({
-        "message": "Recruiter registered"
-    })
+        if User.objects.filter(
+            username=email
+        ).exists():
 
+            return Response(
+
+                {
+                    "error":
+                    "User already exists"
+                },
+
+                status=400
+
+            )
+
+        user = User.objects.create_user(
+
+            username=email,
+
+            email=email,
+
+            password=password,
+
+            first_name=name
+
+        )
+
+        Profile.objects.create(
+
+            user=user,
+
+            role="recruiter"
+
+        )
+
+        return Response(
+
+            {
+                "message":
+                "Recruiter registered"
+            }
+
+        )
+
+    except Exception as e:
+
+        return Response(
+
+            {
+                "error":
+                str(e)
+            },
+
+            status=500
+
+        )
