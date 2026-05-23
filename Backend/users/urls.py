@@ -39,7 +39,8 @@ from .views import (
     login_user,
     profile,
     save_profile,
-    register_recruiter
+    register_recruiter,
+    
 )
 
 urlpatterns = [
@@ -51,6 +52,8 @@ urlpatterns = [
     path("profile/", profile),
 
     path("profile/save/", save_profile),
+
+   
     path(
     "register-recruiter/",
     register_recruiter

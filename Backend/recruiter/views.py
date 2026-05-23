@@ -138,3 +138,4 @@ def update_application_status(
             {"error": "Not Found"},
             status=404
         )
+
