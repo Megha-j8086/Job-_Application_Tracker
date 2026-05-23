@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from .models import Application
 
 
@@ -7,15 +6,27 @@ class ApplicationSerializer(
     serializers.ModelSerializer
 ):
 
-    user_name = serializers.SerializerMethodField()
+    user_name =serializers.CharField(
+        source="user.first_name",
+        read_only=True
+    )
 
-    user_email = serializers.SerializerMethodField()
+    user_email =serializers.CharField(
+        source="user.email",
+        read_only=True
+    )
 
-    company = serializers.SerializerMethodField()
+    job_title =serializers.CharField(
+        source="job.role",
+        read_only=True
+    )
 
-    job_title = serializers.SerializerMethodField()
+    company =serializers.CharField(
+        source="job.company",
+        read_only=True
+    )
 
-    created_at = serializers.DateTimeField(
+    applied_at =serializers.DateTimeField(
         read_only=True
     )
 
@@ -31,88 +42,19 @@ class ApplicationSerializer(
 
             "status",
 
-            "created_at",
+            "applied_at",
 
             "user_name",
 
             "user_email",
-
-            "company",
 
             "job_title",
 
-        ]
-
-        read_only_fields = [
-
-            "created_at",
-
-            "user_name",
-
-            "user_email",
-
-            "company",
-
-            "job_title"
+            "company"
 
         ]
 
-    def get_user_name(
-        self,
-        obj
-    ):
-
-        if obj.user:
-
-            return (
-
-                obj.user.first_name
-
-                or
-
-                obj.user.username
-
-            )
-
-        return ""
-
-    def get_user_email(
-        self,
-        obj
-    ):
-
-        if obj.user:
-
-            return obj.user.email
-
-        return ""
-
-    def get_company(
-        self,
-        obj
-    ):
-
-        if obj.job:
-
-            return obj.job.company
-
-        return ""
-
-    def get_job_title(
-        self,
-        obj
-    ):
-
-        if obj.job:
-
-            return obj.job.role
-
-        return ""
-
-    def create(
-        self,
-        validated_data
-    ):
+    def create(self, validated_data):
 
         validated_data["user"] = (
 
@@ -122,6 +64,6 @@ class ApplicationSerializer(
 
         )
 
-        return super().create(
-            validated_data
+        return Application.objects.create(
+            **validated_data
         )

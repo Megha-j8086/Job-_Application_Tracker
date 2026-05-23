@@ -15,17 +15,20 @@ from .serializers import (
 )
 
 
-@api_view(["GET","POST"])
+# ==================================
+# GET APPLICATIONS + APPLY JOB
+# ==================================
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 
 def applications_list(request):
 
     try:
 
-        # =================
-        # GET
-        # =================
-        if request.method=="GET":
+        # =====================
+        # GET APPLICATIONS
+        # =====================
+        if request.method == "GET":
 
             profile = getattr(
                 request.user,
@@ -52,15 +55,12 @@ def applications_list(request):
 
                     .all()
 
-                    .order_by(
-                        "-id"
-                    )
-
+                    .order_by("-id")
                 )
 
-            elif role=="recruiter":
+            elif role == "recruiter":
 
-                applications=(
+                applications = (
 
                     Application.objects
 
@@ -70,22 +70,15 @@ def applications_list(request):
                     )
 
                     .filter(
-
-                        job__recruiter=
-
-                        request.user
-
+                        job__recruiter=request.user
                     )
 
-                    .order_by(
-                        "-id"
-                    )
-
+                    .order_by("-id")
                 )
 
             else:
 
-                applications=(
+                applications = (
 
                     Application.objects
 
@@ -98,13 +91,10 @@ def applications_list(request):
                         user=request.user
                     )
 
-                    .order_by(
-                        "-id"
-                    )
-
+                    .order_by("-id")
                 )
 
-            serializer=(
+            serializer = (
 
                 ApplicationSerializer(
 
@@ -125,90 +115,105 @@ def applications_list(request):
                 serializer.data
             )
 
+        # =====================
+        # APPLY JOB
+        # =====================
+        elif request.method == "POST":
 
-        # =================
-        # POST APPLY
-        # =================
-        job_id=request.data.get(
-            "job"
-        )
+            job_id = request.data.get(
+                "job"
+            )
 
-        if not job_id:
+            if not job_id:
+
+                return Response(
+                    {
+                        "error":
+                        "Job required"
+                    },
+                    status=400
+                )
+
+            profile = getattr(
+                request.user,
+                "profile",
+                None
+            )
+
+            if (
+                profile
+                and
+                profile.role
+                ==
+                "recruiter"
+            ):
+
+                return Response(
+                    {
+                        "error":
+                        "Recruiters cannot apply"
+                    },
+                    status=403
+                )
+
+            already = (
+
+                Application.objects
+
+                .filter(
+                    user=request.user,
+                    job_id=job_id
+                )
+
+                .exists()
+
+            )
+
+            if already:
+
+                return Response(
+                    {
+                        "error":
+                        "Already Applied"
+                    },
+                    status=400
+                )
+
+            application = (
+
+                Application.objects
+
+                .create(
+
+                    user=request.user,
+
+                    job_id=job_id,
+
+                    status="Applied"
+
+                )
+
+            )
+
+            serializer = (
+
+                ApplicationSerializer(
+
+                    application,
+
+                    context={
+                        "request":
+                        request
+                    }
+
+                )
+
+            )
 
             return Response(
-
-                {
-                    "error":
-                    "Job required"
-                },
-
-                status=400
-
-            )
-
-        already=(
-
-            Application.objects
-
-            .filter(
-
-                user=request.user,
-
-                job_id=job_id
-
-            )
-
-            .exists()
-
-        )
-
-        if already:
-
-            return Response(
-
-                {
-                    "error":
-                    "Already Applied"
-                },
-
-                status=400
-
-            )
-
-        serializer=(
-
-            ApplicationSerializer(
-
-                data=request.data,
-
-                context={
-                    "request":
-                    request
-                }
-
-            )
-
-        )
-
-        if serializer.is_valid():
-
-            serializer.save()
-
-            return Response(
-
                 serializer.data,
-
                 status=201
-
             )
-
-        return Response(
-
-            serializer.errors,
-
-            status=400
-
-        )
 
     except Exception as e:
 
@@ -218,116 +223,134 @@ def applications_list(request):
         )
 
         return Response(
-
             {
                 "error":
                 str(e)
             },
-
             status=500
-
         )
 
-# ===========================
-# DELETE
-# ===========================
+
+# ==================================
+# DELETE APPLICATION
+# ==================================
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 
 def delete_application(
-request,
-id
+    request,
+    id
 ):
 
     try:
 
         app = (
+
             Application.objects
+
             .get(
                 id=id,
                 user=request.user
             )
+
         )
 
         app.delete()
 
         return Response({
+
             "message":
             "Deleted"
+
         })
 
     except Application.DoesNotExist:
 
         return Response(
+
             {
                 "error":
                 "Not Found"
             },
+
             status=404
+
         )
 
 
-# ===========================
+# ==================================
 # UPDATE STATUS
-# ===========================
+# ==================================
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 
 def update_application(
-request,
-id
+    request,
+    id
 ):
 
     try:
 
         app = (
+
             Application.objects
+
             .select_related(
                 "job"
             )
+
             .get(
                 id=id
             )
+
         )
 
     except Application.DoesNotExist:
 
         return Response(
+
             {
                 "error":
                 "Application Not Found"
             },
+
             status=404
+
         )
 
     if app.job.recruiter != request.user:
 
         return Response(
+
             {
                 "error":
                 "Permission denied"
             },
+
             status=403
+
         )
 
-    status_value = (
-        request.data.get(
-            "status"
-        )
+    app.status = request.data.get(
+        "status",
+        app.status
     )
-
-    app.status = status_value
 
     app.save()
 
     serializer = (
+
         ApplicationSerializer(
+
             app,
+
             context={
                 "request":
                 request
             }
+
         )
+
     )
 
     return Response(
