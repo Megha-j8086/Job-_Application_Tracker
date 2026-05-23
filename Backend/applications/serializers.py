@@ -67,3 +67,4 @@ class ApplicationSerializer(
         return Application.objects.create(
             **validated_data
         )
+
