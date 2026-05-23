@@ -10,145 +10,223 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from .models import Application
-from .serializers import ApplicationSerializer
+from .serializers import (
+    ApplicationSerializer
+)
 
 
-# ===========================
-# GET + APPLY
-# ===========================
-@api_view(["GET", "POST"])
+@api_view(["GET","POST"])
 @permission_classes([IsAuthenticated])
 
 def applications_list(request):
 
-    # -------------------
-    # GET
-    # -------------------
-    if request.method == "GET":
+    try:
 
-        role = getattr(
-            getattr(
+        # =================
+        # GET
+        # =================
+        if request.method=="GET":
+
+            profile = getattr(
                 request.user,
                 "profile",
                 None
-            ),
-            "role",
-            "user"
+            )
+
+            role = (
+                profile.role
+                if profile
+                else "user"
+            )
+
+            if request.user.is_staff:
+
+                applications = (
+
+                    Application.objects
+
+                    .select_related(
+                        "user",
+                        "job"
+                    )
+
+                    .all()
+
+                    .order_by(
+                        "-id"
+                    )
+
+                )
+
+            elif role=="recruiter":
+
+                applications=(
+
+                    Application.objects
+
+                    .select_related(
+                        "user",
+                        "job"
+                    )
+
+                    .filter(
+
+                        job__recruiter=
+
+                        request.user
+
+                    )
+
+                    .order_by(
+                        "-id"
+                    )
+
+                )
+
+            else:
+
+                applications=(
+
+                    Application.objects
+
+                    .select_related(
+                        "user",
+                        "job"
+                    )
+
+                    .filter(
+                        user=request.user
+                    )
+
+                    .order_by(
+                        "-id"
+                    )
+
+                )
+
+            serializer=(
+
+                ApplicationSerializer(
+
+                    applications,
+
+                    many=True,
+
+                    context={
+                        "request":
+                        request
+                    }
+
+                )
+
+            )
+
+            return Response(
+                serializer.data
+            )
+
+
+        # =================
+        # POST APPLY
+        # =================
+        job_id=request.data.get(
+            "job"
         )
 
-        if request.user.is_staff:
+        if not job_id:
 
-            applications = (
-                Application.objects
-                .select_related(
-                    "user",
-                    "job"
-                )
-                .all()
-                .order_by("-created_at")
+            return Response(
+
+                {
+                    "error":
+                    "Job required"
+                },
+
+                status=400
+
             )
 
-        elif role == "recruiter":
+        already=(
 
-            applications = (
-                Application.objects
-                .select_related(
-                    "user",
-                    "job"
-                )
-                .filter(
-                    job__recruiter=request.user
-                )
-                .order_by("-created_at")
+            Application.objects
+
+            .filter(
+
+                user=request.user,
+
+                job_id=job_id
+
             )
 
-        else:
+            .exists()
 
-            applications = (
-                Application.objects
-                .select_related(
-                    "user",
-                    "job"
-                )
-                .filter(
-                    user=request.user
-                )
-                .order_by("-created_at")
+        )
+
+        if already:
+
+            return Response(
+
+                {
+                    "error":
+                    "Already Applied"
+                },
+
+                status=400
+
             )
 
-        serializer = ApplicationSerializer(
-            applications,
-            many=True,
-            context={
-                "request": request
-            }
+        serializer=(
+
+            ApplicationSerializer(
+
+                data=request.data,
+
+                context={
+                    "request":
+                    request
+                }
+
+            )
+
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+
+                serializer.data,
+
+                status=201
+
+            )
+
+        return Response(
+
+            serializer.errors,
+
+            status=400
+
+        )
+
+    except Exception as e:
+
+        print(
+            "APPLICATION ERROR:",
+            str(e)
         )
 
         return Response(
-            serializer.data
-        )
 
-
-
-    # -------------------
-    # APPLY
-    # -------------------
-    job_id = request.data.get(
-        "job"
-    )
-
-    if not job_id:
-
-        return Response(
             {
                 "error":
-                "Job required"
+                str(e)
             },
-            status=400
+
+            status=500
+
         )
-
-    exists = (
-        Application.objects
-        .filter(
-            user=request.user,
-            job_id=job_id
-        )
-        .exists()
-    )
-
-    if exists:
-
-        return Response(
-            {
-                "error":
-                "Already Applied"
-            },
-            status=400
-        )
-
-    serializer = ApplicationSerializer(
-        data=request.data,
-        context={
-            "request": request
-        }
-    )
-
-    if serializer.is_valid():
-
-        serializer.save(
-            user=request.user
-        )
-
-        return Response(
-            serializer.data,
-            status=201
-        )
-
-    return Response(
-        serializer.errors,
-        status=400
-    )
-
 
 # ===========================
 # DELETE
