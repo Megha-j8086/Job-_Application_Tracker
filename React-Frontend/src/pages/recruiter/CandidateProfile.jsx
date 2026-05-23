@@ -4,7 +4,7 @@ useState
 }
 from "react";
 
-import{
+import {
 useNavigate
 }
 from "react-router-dom";
@@ -29,10 +29,7 @@ setLoading
 ]=useState(true);
 
 
-// ====================
 // LOAD
-// ====================
-
 useEffect(()=>{
 
 fetchApplications();
@@ -48,14 +45,19 @@ try{
 setLoading(true);
 
 const res=
+
 await API.get(
 "/applications/"
+);
+
+console.log(
+res.data
 );
 
 setApplications(
 res.data||[]
 );
-console.log("APPLICATIONS:", res.data);
+
 }
 
 catch(err){
@@ -77,10 +79,7 @@ setLoading(false);
 };
 
 
-// ====================
-// UPDATE STATUS
-// ====================
-
+// UPDATE
 const updateStatus=
 async(
 id,
@@ -105,27 +104,23 @@ prev=>
 
 prev.map(
 
-app=>
+a=>
 
-app.id===id
+a.id===id
 
 ?
 
 {
-...app,
+...a,
 status
 }
 
 :
 
-app
+a
 
 )
 
-);
-
-alert(
-"Status Updated"
 );
 
 }
@@ -149,11 +144,19 @@ err.response?.data?.error
 };
 
 
-// ====================
 // VIEW PROFILE
-// ====================
+const viewProfile=
+(userId)=>{
 
-const viewProfile=(userId)=>{
+if(!userId){
+
+alert(
+"User id missing"
+);
+
+return;
+
+}
 
 navigate(
 
@@ -166,9 +169,7 @@ navigate(
 
 return(
 
-<div
-className="applicants-page"
->
+<div className="applicants-page">
 
 <button
 
@@ -188,6 +189,7 @@ navigate(
 
 </button>
 
+
 <h1>
 
 Job Applications
@@ -201,11 +203,15 @@ loading
 
 ?
 
+(
+
 <h3>
 
 Loading...
 
 </h3>
+
+)
 
 :
 
@@ -213,13 +219,19 @@ applications.length===0
 
 ?
 
+(
+
 <h3>
 
 No Applications
 
 </h3>
 
+)
+
 :
+
+(
 
 applications.map(
 
@@ -327,9 +339,7 @@ Status:
 
 {" "}
 
-<span
-className="status"
->
+<span className="status">
 
 {
 
@@ -354,11 +364,9 @@ Applied:
 
 {
 
-app.created_at
+app.applied_at
 
-?.split(
-"T"
-)[0]
+?.split("T")[0]
 
 ||
 
@@ -369,9 +377,7 @@ app.created_at
 </p>
 
 
-<div
-className="actions"
->
+<div className="actions">
 
 <button
 
@@ -382,6 +388,10 @@ onClick={()=>
 viewProfile(
 
 app.user_id
+
+||
+
+app.user
 
 )
 
@@ -401,11 +411,8 @@ className="interview-btn"
 onClick={()=>
 
 updateStatus(
-
 app.id,
-
 "Interview"
-
 )
 
 }
@@ -424,11 +431,8 @@ className="offer-btn"
 onClick={()=>
 
 updateStatus(
-
 app.id,
-
 "Offer"
-
 )
 
 }
@@ -447,11 +451,8 @@ className="reject-btn"
 onClick={()=>
 
 updateStatus(
-
 app.id,
-
 "Rejected"
-
 )
 
 }
@@ -465,6 +466,8 @@ Reject
 </div>
 
 </div>
+
+)
 
 )
 

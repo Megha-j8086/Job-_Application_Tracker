@@ -30,6 +30,7 @@ import RecruiterManageJobs from "./pages/recruiter/RecruiterManageJobs";
 import Applicants from "./pages/recruiter/Applicants";
 import Interviews from "./pages/recruiter/Interviews";
 import RecruiterApplications from "./pages/recruiter/RecruiterApplications";
+import CandidateProfile from "./pages/recruiter/CandidateProfile";
 import { Routes, Route } from "react-router-dom";
 
 const App = () => {
@@ -100,8 +101,11 @@ const App = () => {
           path="/interviews"
           element={<Interviews />}
         />
-      </Routes>
 
+        <Route path="/candidate/:id" element={ <CandidateProfile/> }/>
+
+      </Routes>
+      
       <Footer />
 
     </>

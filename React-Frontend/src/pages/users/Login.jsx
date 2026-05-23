@@ -1,251 +1,166 @@
-// import React, { useState } from "react";
-// import "../../styles/Login.css";
-// import API from "../../api/api";
-// import { useNavigate, Link } from "react-router-dom";
-
-// const Login = () => {
-//   const navigate = useNavigate();
-
-//   // ✅ FIX: backend expects username, not email
-//   const [form, setForm] = useState({
-//     username: "",
-//     password: ""
-//   });
-
-//   const [error, setError] = useState("");
-
-//   const handleChange = (e) => {
-//     setForm({
-//       ...form,
-//       [e.target.name]: e.target.value
-//     });
-//   };
-
-//  const handleSubmit=async(e)=>{
-
-// e.preventDefault();
-
-// try{
-
-// const res=
-// await API.post(
-// "/users/login/",
-// form
-// );
-
-// localStorage.clear();
-
-// localStorage.setItem(
-// "access",
-// res.data.access
-// );
-
-// localStorage.setItem(
-// "refresh",
-// res.data.refresh
-// );
-
-// localStorage.setItem(
-
-// "user",
-
-// JSON.stringify(
-// res.data.user
-// )
-
-// );
-
-// if(
-// res.data.user.role
-// ===
-// "recruiter"
-// ){
-
-// navigate(
-// "/recruiter-dashboard"
-// );
-
-// }
-
-// else{
-
-// navigate(
-// "/dashboard"
-// );
-
-// }
-
-// }
-
-// catch(err){
-
-// setError(
-
-// err.response?.data?.error
-
-// ||
-
-// "Login Failed"
-
-// );
-
-// }
-
-// };
-
-//   return (
-//     <div className="auth-container">
-//       <form className="auth-form" onSubmit={handleSubmit}>
-
-//         <h2>Login</h2>
-
-//         {error && <p style={{ color: "red" }}>{error}</p>}
-
-//         {/* ✅ FIXED FIELD NAME */}
-//         <input
-//           type="text"
-//           name="username"
-//           placeholder="Enter Email"
-//           value={form.username}
-//           onChange={handleChange}
-//           required
-//         />
-
-//         <input
-//           type="password"
-//           name="password"
-//           placeholder="Enter Password"
-//           value={form.password}
-//           onChange={handleChange}
-//           required
-//         />
-
-//         <button type="submit" className="btn primary">
-//           Login
-//         </button>
-
-//         <p className="switch-link">
-//           Don’t have an account? <Link to="/register">Register</Link>
-//         </p>
-
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Login;
 import React, { useState } from "react";
+
 import "../../styles/Login.css";
+
 import API from "../../api/api";
-import { useNavigate, Link } from "react-router-dom";
+
+import {
+  useNavigate,
+  Link
+} from "react-router-dom";
 
 const Login = () => {
 
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-  });
+  const [form, setForm] =
+    useState({
+      username: "",
+      password: ""
+    });
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
 
   const handleChange = (e) => {
 
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm((prev) => ({
+
+      ...prev,
+
+      [e.target.name]:
+      e.target.value
+
+    }));
 
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit =
+    async (e) => {
 
-    e.preventDefault();
+      e.preventDefault();
 
-    try {
+      setError("");
 
-      // CLEAR OLD USER FIRST
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("user");
+      try {
 
-      const res = await API.post(
-        "/users/login/",
-        {
-          username: form.username.trim().toLowerCase(),
-          password: form.password,
+        setLoading(true);
+
+        const res =
+          await API.post(
+            "/users/login/",
+            form
+          );
+
+        const {
+          access,
+          refresh,
+          user
+        } =
+        res.data;
+
+        // clear auth only
+        localStorage.removeItem(
+          "access"
+        );
+
+        localStorage.removeItem(
+          "refresh"
+        );
+
+        localStorage.removeItem(
+          "user"
+        );
+
+        // save new login
+        localStorage.setItem(
+          "access",
+          access
+        );
+
+        localStorage.setItem(
+          "refresh",
+          refresh
+        );
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: user.id,
+            name:
+              user.name
+              ||
+              user.username,
+
+            email:
+              user.email,
+
+            role:
+              user.role
+          })
+        );
+
+        // redirect
+
+        if (
+          user.role ===
+          "recruiter"
+        ) {
+
+          navigate(
+            "/recruiter-dashboard",
+            {
+              replace:
+              true
+            }
+          );
+
         }
-      );
 
-      console.log("LOGIN:", res.data);
+        else {
 
-      // SAVE NEW USER
-      localStorage.setItem(
-        "access",
-        res.data.access
-      );
+          navigate(
+            "/dashboard",
+            {
+              replace:
+              true
+            }
+          );
 
-      localStorage.setItem(
-        "refresh",
-        res.data.refresh
-      );
+        }
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(res.data.user)
-      );
+      }
 
-      alert("Login Success");
+      catch (err) {
 
-      // ROLE REDIRECT
-      if (
-        res.data.user.role === "recruiter"
-      ) {
+        console.log(
+          err
+        );
 
-        navigate(
-          "/recruiter-dashboard"
+        setError(
+
+          err.response
+          ?.data
+          ?.error
+
+          ||
+
+          "Invalid email or password"
+
         );
 
       }
 
-      else if (
-        res.data.user.role === "admin"
-      ) {
+      finally {
 
-        navigate(
-          "/admin-dashboard"
-        );
+        setLoading(false);
 
       }
 
-      else {
-
-        navigate(
-          "/dashboard"
-        );
-
-      }
-
-    }
-
-    catch (err) {
-
-      console.log(
-        err.response?.data
-      );
-
-      setError(
-
-        err.response?.data?.error ||
-
-        "Login Failed"
-
-      );
-
-    }
-
-  };
+    };
 
   return (
 
@@ -256,22 +171,41 @@ const Login = () => {
         onSubmit={handleSubmit}
       >
 
-        <h2>Login</h2>
+        <h2>
 
-        {error && (
+          Login
 
-          <p style={{ color: "red" }}>
+        </h2>
+
+        {
+
+          error
+
+          &&
+
+          <p
+            style={{
+              color:
+              "red"
+            }}
+          >
+
             {error}
+
           </p>
 
-        )}
+        }
 
         <input
-          type="text"
+          type="email"
           name="username"
           placeholder="Enter Email"
-          value={form.username}
-          onChange={handleChange}
+          value={
+            form.username
+          }
+          onChange={
+            handleChange
+          }
           required
         />
 
@@ -279,21 +213,42 @@ const Login = () => {
           type="password"
           name="password"
           placeholder="Enter Password"
-          value={form.password}
-          onChange={handleChange}
+          value={
+            form.password
+          }
+          onChange={
+            handleChange
+          }
           required
         />
 
         <button
           type="submit"
           className="btn primary"
+          disabled={
+            loading
+          }
         >
-          Login
+
+          {
+
+            loading
+
+            ?
+
+            "Logging in..."
+
+            :
+
+            "Login"
+
+          }
+
         </button>
 
         <p className="switch-link">
 
-          Don't have account?
+          Don’t have account?
 
           <Link to="/register">
 
