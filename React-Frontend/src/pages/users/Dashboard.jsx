@@ -38,7 +38,7 @@ useState(true);
 // ====================
 useEffect(()=>{
 
-const token =
+const token=
 localStorage.getItem(
 "access"
 );
@@ -56,122 +56,74 @@ loadDashboard();
 },[]);
 
 
-// ====================
-// LOAD DASHBOARD
-// ====================
+
 const loadDashboard=
 async()=>{
 
-setLoading(true);
-
 try{
 
-// ALWAYS GET USER
-const profile=
+setLoading(true);
 
+
+// PROFILE
+
+const profile=
 await API.get(
 "/users/profile/"
 );
 
-const currentUser={
-
-id:
-profile.data.id,
-
-name:
-profile.data.name,
-
-email:
-profile.data.email,
-
-role:
-profile.data.role
-
-};
-
 setUser(
-currentUser
+profile.data
 );
 
-localStorage.setItem(
 
-"user",
+// BLOCK
 
-JSON.stringify(
-currentUser
-)
+if(
+profile.data.role
+===
+"recruiter"
+){
 
+navigate(
+"/recruiter-dashboard"
 );
+
+return;
+
+}
 
 
 // JOBS
 
-const jobsRes=
-
+const jobs=
 await API.get(
 "/jobs/"
 );
 
 setJobs(
-
-Array.isArray(
-jobsRes.data
-)
-
-?
-
-jobsRes.data
-
-:
-
-[]
-
+jobs.data
 );
 
 
 // APPLICATIONS
 
-try{
-
-const appRes=
-
+const apps=
 await API.get(
 "/applications/"
 );
 
 setApplications(
-
-Array.isArray(
-appRes.data
-)
-
-?
-
-appRes.data
-
-:
-
-[]
-
+apps.data
 );
 
 }
 
 catch{
 
-setApplications([]);
-
-}
-
-}
-
-catch(err){
-
-console.log(err);
-
-localStorage.clear();
-
-navigate("/log");
+navigate(
+"/log"
+);
 
 }
 
@@ -182,7 +134,6 @@ setLoading(false);
 }
 
 };
-
 
 // ====================
 // APPLY

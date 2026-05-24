@@ -5,264 +5,386 @@ import "../../styles/Login.css";
 import API from "../../api/api";
 
 import {
-  useNavigate,
-  Link
-} from "react-router-dom";
+useNavigate,
+Link
+}
+from "react-router-dom";
 
-const Login = () => {
 
-  const navigate = useNavigate();
+const Login=()=>{
 
-  const [form, setForm] =
-    useState({
-      username: "",
-      password: ""
-    });
+const navigate=
+useNavigate();
 
-  const [error, setError] =
-    useState("");
+const [form,setForm]=
+useState({
 
-  const [loading, setLoading] =
-    useState(false);
+username:"",
+password:""
 
-  const handleChange = (e) => {
+});
 
-    setForm((prev) => ({
+const [error,setError]=
+useState("");
 
-      ...prev,
+const [loading,setLoading]=
+useState(false);
 
-      [e.target.name]:
-      e.target.value
 
-    }));
+// ====================
+// INPUT
+// ====================
 
-  };
+const handleChange=(e)=>{
 
-  const handleSubmit =
-    async (e) => {
+setForm({
 
-      e.preventDefault();
+...form,
 
-      setError("");
+[e.target.name]:
 
-      try {
+e.target.value
 
-        setLoading(true);
+});
 
-        const res =
-          await API.post(
-            "/users/login/",
-            form
-          );
+};
 
-        const {
-          access,
-          refresh,
-          user
-        } =
-        res.data;
 
-        // clear auth only
-        localStorage.removeItem(
-          "access"
-        );
+// ====================
+// LOGIN
+// ====================
 
-        localStorage.removeItem(
-          "refresh"
-        );
+const handleSubmit=
+async(e)=>{
 
-        localStorage.removeItem(
-          "user"
-        );
+e.preventDefault();
 
-        // save new login
-        localStorage.setItem(
-          "access",
-          access
-        );
+setError("");
 
-        localStorage.setItem(
-          "refresh",
-          refresh
-        );
+try{
 
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            id: user.id,
-            name:
-              user.name
-              ||
-              user.username,
+setLoading(true);
 
-            email:
-              user.email,
 
-            role:
-              user.role
-          })
-        );
+// REMOVE OLD AUTH ONLY
 
-        // redirect
+localStorage.removeItem(
+"access"
+);
 
-        if (
-          user.role ===
-          "recruiter"
-        ) {
+localStorage.removeItem(
+"refresh"
+);
 
-          navigate(
-            "/recruiter-dashboard",
-            {
-              replace:
-              true
-            }
-          );
+localStorage.removeItem(
+"user"
+);
 
-        }
 
-        else {
+// LOGIN
 
-          navigate(
-            "/dashboard",
-            {
-              replace:
-              true
-            }
-          );
+const res=
 
-        }
+await API.post(
 
-      }
+"/users/login/",
 
-      catch (err) {
+{
 
-        console.log(
-          err
-        );
+username:
 
-        setError(
+form.username
 
-          err.response
-          ?.data
-          ?.error
+.trim()
 
-          ||
+.toLowerCase(),
 
-          "Invalid email or password"
+password:
 
-        );
+form.password
 
-      }
+}
 
-      finally {
+);
 
-        setLoading(false);
 
-      }
+const {
 
-    };
+access,
 
-  return (
+refresh,
 
-    <div className="auth-container">
+user
 
-      <form
-        className="auth-form"
-        onSubmit={handleSubmit}
-      >
+}=res.data;
 
-        <h2>
 
-          Login
+// SAVE
 
-        </h2>
+localStorage.setItem(
 
-        {
+"access",
 
-          error
+access
 
-          &&
+);
 
-          <p
-            style={{
-              color:
-              "red"
-            }}
-          >
+localStorage.setItem(
 
-            {error}
+"refresh",
 
-          </p>
+refresh
 
-        }
+);
 
-        <input
-          type="email"
-          name="username"
-          placeholder="Enter Email"
-          value={
-            form.username
-          }
-          onChange={
-            handleChange
-          }
-          required
-        />
+localStorage.setItem(
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter Password"
-          value={
-            form.password
-          }
-          onChange={
-            handleChange
-          }
-          required
-        />
+"user",
 
-        <button
-          type="submit"
-          className="btn primary"
-          disabled={
-            loading
-          }
-        >
+JSON.stringify({
 
-          {
+id:user.id,
 
-            loading
+name:user.name,
 
-            ?
+email:user.email,
 
-            "Logging in..."
+role:user.role,
 
-            :
+is_staff:
 
-            "Login"
+user.is_staff
 
-          }
+})
 
-        </button>
+);
 
-        <p className="switch-link">
 
-          Don’t have account?
+// ====================
+// REDIRECT
+// ====================
 
-          <Link to="/register">
+if(
 
-            Register
+user.is_staff
 
-          </Link>
+||
 
-        </p>
+user.role==="admin"
 
-      </form>
+){
 
-    </div>
+navigate(
 
-  );
+"/admin-dashboard",
+
+{
+
+replace:true
+
+}
+
+);
+
+return;
+
+}
+
+
+if(
+
+user.role==="recruiter"
+
+){
+
+navigate(
+
+"/recruiter-dashboard",
+
+{
+
+replace:true
+
+}
+
+);
+
+return;
+
+}
+
+
+navigate(
+
+"/dashboard",
+
+{
+
+replace:true
+
+}
+
+);
+
+}
+
+catch(err){
+
+console.log(err);
+
+setError(
+
+err.response
+
+?.data
+
+?.error
+
+||
+
+"Invalid Email or Password"
+
+);
+
+}
+
+finally{
+
+setLoading(false);
+
+}
+
+};
+
+
+return(
+
+<div className="auth-container">
+
+<form
+
+className="auth-form"
+
+onSubmit={handleSubmit}
+
+>
+
+<h2>
+
+Login
+
+</h2>
+
+
+{
+
+error
+
+&&
+
+<p
+style={{
+color:"red"
+}}
+>
+
+{error}
+
+</p>
+
+}
+
+
+<input
+
+type="email"
+
+name="username"
+
+placeholder=
+
+"Enter Email"
+
+value=
+
+{form.username}
+
+onChange=
+
+{handleChange}
+
+required
+
+/>
+
+
+<input
+
+type="password"
+
+name="password"
+
+placeholder=
+
+"Enter Password"
+
+value=
+
+{form.password}
+
+onChange=
+
+{handleChange}
+
+required
+
+/>
+
+
+<button
+
+type="submit"
+
+className="btn primary"
+
+disabled={loading}
+
+>
+
+{
+
+loading
+
+?
+
+"Logging in..."
+
+:
+
+"Login"
+
+}
+
+</button>
+
+
+<p className="switch-link">
+
+Don't have account?
+
+<Link to="/register">
+
+Register
+
+</Link>
+
+</p>
+
+</form>
+
+</div>
+
+);
 
 };
 
