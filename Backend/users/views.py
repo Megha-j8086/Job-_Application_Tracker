@@ -168,110 +168,65 @@ def register_recruiter(request):
 # =========================================
 # LOGIN
 # =========================================
-
+from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @api_view(["POST"])
 def login_user(request):
 
-    email = (
-
-        request.data.get(
-            "username",
-            ""
-        )
-
+    email=(
+        request.data
+        .get("username","")
         .strip()
-
         .lower()
-
     )
 
-    password = request.data.get(
+    password=request.data.get(
         "password"
     )
 
-    if not email or not password:
-
-        return Response(
-
-            {
-                "error":
-                "Email and password required"
-            },
-
-            status=400
-
-        )
-
-    user = authenticate(
-
+    user=authenticate(
         username=email,
-
         password=password
-
     )
 
     if user is None:
 
         return Response(
-
             {
                 "error":
-                "Invalid email or password"
+                "Invalid credentials"
             },
-
             status=401
-
         )
 
-    profile = getattr(
+    refresh=RefreshToken.for_user(
+        user
+    )
+
+    role="user"
+
+    if hasattr(
         user,
-        "profile",
-        None
-    )
+        "profile"
+    ):
+        role=user.profile.role
 
-    role = (
-
-        "admin"
-
-        if user.is_staff
-
-        else
-
-        profile.role
-
-        if profile
-
-        else
-
-        "user"
-
-    )
-
-    refresh = (
-        RefreshToken.for_user(
-            user
-        )
-    )
+    if user.is_staff:
+        role="admin"
 
     return Response({
 
         "access":
-
         str(
             refresh.access_token
         ),
 
         "refresh":
-
-        str(
-            refresh
-        ),
+        str(refresh),
 
         "user":{
 
@@ -279,23 +234,15 @@ def login_user(request):
             user.id,
 
             "name":
-
-            user.first_name
-
-            or
-
-            user.username,
+            user.first_name,
 
             "email":
-
             user.email,
 
             "role":
-
             role,
 
             "is_staff":
-
             user.is_staff
 
         }
