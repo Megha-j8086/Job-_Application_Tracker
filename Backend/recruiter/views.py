@@ -24,8 +24,10 @@ from applications.serializers import (
 
 def is_recruiter(user):
 
-    return hasattr(user, "recruiter")
-
+    return hasattr(
+        user,
+        "profile"
+    ) and user.profile.role=="recruiter"
 
 # ==========================
 # ADD JOB
@@ -36,29 +38,15 @@ def is_recruiter(user):
 def add_job(request):
 
     if not is_recruiter(request.user):
+        return Response({"error": "Recruiter only"}, status=403)
 
-        return Response(
-            {"error": "Recruiter only"},
-            status=403
-        )
-
-    serializer = JobSerializer(
-        data=request.data
-    )
+    serializer = JobSerializer(data=request.data)
 
     if serializer.is_valid():
+        serializer.save(recruiter=request.user)
+        return Response(serializer.data, status=201)
 
-        serializer.save(
-            recruiter=request.user.recruiter
-        )
-
-        return Response(serializer.data)
-
-    return Response(
-        serializer.errors,
-        status=400
-    )
-
+    return Response(serializer.errors, status=400)
 
 # ==========================
 # GET RECRUITER JOBS
@@ -68,17 +56,13 @@ def add_job(request):
 @permission_classes([IsAuthenticated])
 def recruiter_jobs(request):
 
-    jobs = Job.objects.filter(
-        recruiter=request.user.recruiter
-    )
+    if not is_recruiter(request.user):
+        return Response([], status=200)
 
-    serializer = JobSerializer(
-        jobs,
-        many=True
-    )
+    jobs = Job.objects.filter(recruiter=request.user)
 
+    serializer = JobSerializer(jobs, many=True)
     return Response(serializer.data)
-
 
 # ==========================
 # GET APPLICATIONS
@@ -88,18 +72,14 @@ def recruiter_jobs(request):
 @permission_classes([IsAuthenticated])
 def recruiter_applications(request):
 
-    jobs = Job.objects.filter(
-        recruiter=request.user.recruiter
-    )
+    if not is_recruiter(request.user):
+        return Response([], status=200)
 
-    applications = Application.objects.filter(
-        job__in=jobs
-    )
+    jobs = Job.objects.filter(recruiter=request.user)
 
-    serializer = ApplicationSerializer(
-        applications,
-        many=True
-    )
+    applications = Application.objects.filter(job__in=jobs)
+
+    serializer = ApplicationSerializer(applications, many=True)
 
     return Response(serializer.data)
 
@@ -110,32 +90,22 @@ def recruiter_applications(request):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def update_application_status(
-    request,
-    id
-):
+def update_application_status(request, id):
+
+    if not is_recruiter(request.user):
+        return Response({"error": "Recruiter only"}, status=403)
 
     try:
-
         application = Application.objects.get(
-            id=id
+            id=id,
+            job__recruiter=request.user.recruiter
         )
-
-        application.status = request.data.get(
-            "status"
-        )
-
-        application.save()
-
-        return Response({
-            "message":
-            "Status Updated"
-        })
 
     except Application.DoesNotExist:
+        return Response({"error": "Not Found"}, status=404)
 
-        return Response(
-            {"error": "Not Found"},
-            status=404
-        )
+    application.status = request.data.get("status", application.status)
+    application.save()
+
+    return Response({"message": "Status Updated"})
 

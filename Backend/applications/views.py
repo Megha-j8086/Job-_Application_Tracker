@@ -20,217 +20,90 @@ from .serializers import (
 # ==================================
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
-
 def applications_list(request):
 
     try:
 
         # =====================
-        # GET APPLICATIONS
+        # GET
         # =====================
         if request.method == "GET":
 
-            profile = getattr(
-                request.user,
-                "profile",
-                None
-            )
-
-            role = (
-                profile.role
-                if profile
-                else "user"
-            )
+            profile = getattr(request.user, "profile", None)
+            role = profile.role if profile else "user"
 
             if request.user.is_staff:
-
-                applications = (
-
-                    Application.objects
-
-                    .select_related(
-                        "user",
-                        "job"
-                    )
-
-                    .all()
-
-                    .order_by("-id")
-                )
+                applications = Application.objects.select_related(
+                    "user", "job"
+                ).all().order_by("-id")
 
             elif role == "recruiter":
-
-                applications = (
-
-                    Application.objects
-
-                    .select_related(
-                        "user",
-                        "job"
-                    )
-
-                    .filter(
-                        job__recruiter=request.user
-                    )
-
-                    .order_by("-id")
-                )
+                applications = Application.objects.select_related(
+                    "user", "job"
+                ).filter(
+                    job__recruiter=request.user
+                ).order_by("-id")
 
             else:
+                applications = Application.objects.select_related(
+                    "user", "job"
+                ).filter(
+                    user=request.user
+                ).order_by("-id")
 
-                applications = (
-
-                    Application.objects
-
-                    .select_related(
-                        "user",
-                        "job"
-                    )
-
-                    .filter(
-                        user=request.user
-                    )
-
-                    .order_by("-id")
-                )
-
-            serializer = (
-
-                ApplicationSerializer(
-
-                    applications,
-
-                    many=True,
-
-                    context={
-                        "request":
-                        request
-                    }
-
-                )
-
+            serializer = ApplicationSerializer(
+                applications,
+                many=True,
+                context={"request": request}
             )
 
-            return Response(
-                serializer.data
-            )
+            return Response(serializer.data)
 
         # =====================
-        # APPLY JOB
+        # POST (APPLY JOB)
         # =====================
-        elif request.method == "POST":
+        if request.method == "POST":
 
-            job_id = request.data.get(
-                "job"
-            )
+            job_id = request.data.get("job")
 
             if not job_id:
+                return Response({"error": "Job required"}, status=400)
 
+            profile = getattr(request.user, "profile", None)
+
+            if profile and profile.role == "recruiter":
                 return Response(
-                    {
-                        "error":
-                        "Job required"
-                    },
-                    status=400
-                )
-
-            profile = getattr(
-                request.user,
-                "profile",
-                None
-            )
-
-            if (
-                profile
-                and
-                profile.role
-                ==
-                "recruiter"
-            ):
-
-                return Response(
-                    {
-                        "error":
-                        "Recruiters cannot apply"
-                    },
+                    {"error": "Recruiters cannot apply"},
                     status=403
                 )
 
-            already = (
+            exists = Application.objects.filter(
+                user=request.user,
+                job_id=job_id
+            ).exists()
 
-                Application.objects
-
-                .filter(
-                    user=request.user,
-                    job_id=job_id
-                )
-
-                .exists()
-
-            )
-
-            if already:
-
+            if exists:
                 return Response(
-                    {
-                        "error":
-                        "Already Applied"
-                    },
+                    {"error": "Already Applied"},
                     status=400
                 )
 
-            application = (
-
-                Application.objects
-
-                .create(
-
-                    user=request.user,
-
-                    job_id=job_id,
-
-                    status="Applied"
-
-                )
-
+            application = Application.objects.create(
+                user=request.user,
+                job_id=job_id,
+                status="Applied"
             )
 
-            serializer = (
-
-                ApplicationSerializer(
-
-                    application,
-
-                    context={
-                        "request":
-                        request
-                    }
-
-                )
-
+            serializer = ApplicationSerializer(
+                application,
+                context={"request": request}
             )
 
-            return Response(
-                serializer.data,
-                status=201
-            )
+            return Response(serializer.data, status=201)
 
     except Exception as e:
-
-        print(
-            "APPLICATION ERROR:",
-            str(e)
-        )
-
-        return Response(
-            {
-                "error":
-                str(e)
-            },
-            status=500
-        )
-
-
+        print("APPLICATION ERROR:", e)
+        return Response({"error": str(e)}, status=500)
 # ==================================
 # DELETE APPLICATION
 # ==================================

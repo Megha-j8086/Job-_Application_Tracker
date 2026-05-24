@@ -147,94 +147,40 @@ def register_recruiter(request):
 # =========================================
 # LOGIN
 # =========================================
-# @api_view(["POST"])
-# @permission_classes([AllowAny])
-# def login_user(request):
+#from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
-#     email = request.data.get("username")
-#     password = request.data.get("password")
-
-#     if not email or not password:
-
-#         return Response(
-#             {
-#                 "error": "Email and password required"
-#             },
-#             status=400
-#         )
-
-#     email = email.strip().lower()
-
-#     user = authenticate(
-#         username=email,
-#         password=password
-#     )
-
-#     if user is None:
-
-#         return Response(
-#             {
-#                 "error": "Invalid Credentials"
-#             },
-#             status=401
-#         )
-
-#     profile, created = Profile.objects.get_or_create(
-#         user=user,
-#         defaults={
-#             "role": "user"
-#         }
-#     )
-
-#     refresh = RefreshToken.for_user(user)
-
-#     return Response({
-
-#         "access": str(refresh.access_token),
-
-#         "refresh": str(refresh),
-
-#         "user": {
-
-#             "id": user.id,
-
-#             "name": user.first_name,
-
-#             "email": user.email,
-
-#             "role": profile.role,
-
-#             "is_staff": user.is_staff
-
-#         }
-
-#     })
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
-
 def login_user(request):
 
-    username=request.data.get("username")
+    email=request.data.get("username")
+
     password=request.data.get("password")
 
     user=authenticate(
-        username=username,
+        username=email,
         password=password
     )
 
     if not user:
 
         return Response(
-            {"error":"Invalid credentials"},
+            {
+                "error":"Invalid credentials"
+            },
             status=401
         )
 
     refresh=RefreshToken.for_user(user)
 
-    profile,_=Profile.objects.get_or_create(
-        user=user
-    )
+    role="user"
+
+    if hasattr(user,"profile"):
+
+        role=user.profile.role
 
     return Response({
 
@@ -250,13 +196,26 @@ def login_user(request):
             user.id,
 
             "name":
-            user.first_name,
+
+            user.first_name
+
+            or
+
+            user.username,
 
             "email":
             user.email,
 
             "role":
-            profile.role
+
+            "admin"
+
+            if user.is_staff
+
+            else role,
+
+            "is_staff":
+            user.is_staff
 
         }
 
@@ -264,43 +223,93 @@ def login_user(request):
 # =========================================
 # GET PROFILE
 # =========================================
+# =========================================
+# GET PROFILE
+# =========================================
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+
 def profile(request):
 
     profile, created = Profile.objects.get_or_create(
+
         user=request.user,
+
         defaults={
-            "role": "admin"
+
+            "role":
+
+            "admin"
+
             if request.user.is_staff
+
             else "user"
+
         }
+
     )
 
     return Response({
 
-        "id": request.user.id,
+        "id":
 
-        "name": request.user.first_name,
+        request.user.id,
 
-        "email": request.user.email,
+        "name":
 
-        "role": profile.role,
+        request.user.first_name
 
-        "skills": profile.skills,
+        or
 
-        "projects": profile.projects,
+        request.user.username,
 
-        "bio": profile.bio,
+        "email":
 
-        "github": profile.github,
+        request.user.email,
 
-        "linkedin": profile.linkedin,
+        "role":
+
+        (
+
+            "admin"
+
+            if request.user.is_staff
+
+            else profile.role
+
+        ),
+
+        "is_staff":
+
+        request.user.is_staff,
+
+        "skills":
+
+        profile.skills,
+
+        "projects":
+
+        profile.projects,
+
+        "bio":
+
+        profile.bio,
+
+        "github":
+
+        profile.github,
+
+        "linkedin":
+
+        profile.linkedin,
 
         "resume":
 
         request.build_absolute_uri(
+
             profile.resume.url
+
         )
 
         if profile.resume
@@ -308,6 +317,7 @@ def profile(request):
         else None
 
     })
+
 
 
 # =========================================
