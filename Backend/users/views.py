@@ -25,69 +25,90 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile
 from .serializers import ProfileSerializer
 
-
-# =========================================
-# REGISTER USER
-# =========================================
 @api_view(["POST"])
 @permission_classes([AllowAny])
+
 def register_user(request):
 
     try:
 
-        name = request.data.get("name")
-        email = request.data.get("email")
-        password = request.data.get("password")
+        name=request.data.get(
+            "name"
+        )
 
-        if not email or not password:
+        email=(
+            request.data
+            .get(
+                "email"
+            )
+            .strip()
+            .lower()
+        )
+
+        password=request.data.get(
+            "password"
+        )
+
+        if not email:
 
             return Response(
                 {
-                    "error": "Email and password required"
+                    "error":
+                    "Email required"
                 },
                 status=400
             )
 
-        email = email.strip().lower()
-
-        # CHECK EXISTING USER
-        if User.objects.filter(username=email).exists():
+        if User.objects.filter(
+            username=email
+        ).exists():
 
             return Response(
                 {
-                    "error": "User already exists"
+                    "error":
+                    "User already exists"
                 },
                 status=400
             )
 
-        validate_password(password)
+        user=User.objects.create_user(
 
-        user = User.objects.create_user(
             username=email,
+
             email=email,
+
             password=password,
+
             first_name=name
+
         )
 
         Profile.objects.create(
+
             user=user,
+
             role="user"
+
         )
 
-        return Response(
-            {
-                "message": "Registration Success"
-            },
-            status=201
-        )
+        return Response({
+
+            "message":
+            "Registered"
+
+        })
 
     except Exception as e:
 
         return Response(
+
             {
-                "error": str(e)
+                "error":
+                str(e)
             },
+
             status=400
+
         )
 
 
@@ -147,7 +168,8 @@ def register_recruiter(request):
 # =========================================
 # LOGIN
 # =========================================
-#from rest_framework.decorators import api_view
+
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -156,39 +178,100 @@ from rest_framework_simplejwt.tokens import RefreshToken
 @api_view(["POST"])
 def login_user(request):
 
-    email=request.data.get("username")
+    email = (
 
-    password=request.data.get("password")
-
-    user=authenticate(
-        username=email,
-        password=password
-    )
-
-    if not user:
-
-        return Response(
-            {
-                "error":"Invalid credentials"
-            },
-            status=401
+        request.data.get(
+            "username",
+            ""
         )
 
-    refresh=RefreshToken.for_user(user)
+        .strip()
 
-    role="user"
+        .lower()
 
-    if hasattr(user,"profile"):
+    )
 
-        role=user.profile.role
+    password = request.data.get(
+        "password"
+    )
+
+    if not email or not password:
+
+        return Response(
+
+            {
+                "error":
+                "Email and password required"
+            },
+
+            status=400
+
+        )
+
+    user = authenticate(
+
+        username=email,
+
+        password=password
+
+    )
+
+    if user is None:
+
+        return Response(
+
+            {
+                "error":
+                "Invalid email or password"
+            },
+
+            status=401
+
+        )
+
+    profile = getattr(
+        user,
+        "profile",
+        None
+    )
+
+    role = (
+
+        "admin"
+
+        if user.is_staff
+
+        else
+
+        profile.role
+
+        if profile
+
+        else
+
+        "user"
+
+    )
+
+    refresh = (
+        RefreshToken.for_user(
+            user
+        )
+    )
 
     return Response({
 
         "access":
-        str(refresh.access_token),
+
+        str(
+            refresh.access_token
+        ),
 
         "refresh":
-        str(refresh),
+
+        str(
+            refresh
+        ),
 
         "user":{
 
@@ -204,17 +287,15 @@ def login_user(request):
             user.username,
 
             "email":
+
             user.email,
 
             "role":
 
-            "admin"
-
-            if user.is_staff
-
-            else role,
+            role,
 
             "is_staff":
+
             user.is_staff
 
         }
